@@ -1,6 +1,6 @@
 {
-  "generated_utc": "2026-11-13T17:41:42.339+00:00",
-  "n_requests_total": 55,
+  "generated_utc": "2026-11-13T18:57:41.090+00:00",
+  "n_requests_total": 57,
   "model": "openai/gpt-oss-120b",
   "latency": {
     "medium": {
@@ -129,25 +129,25 @@
         "x-ratelimit-reset-requests": "1h7m40.8s",
         "retry-after": "2"
       }
+    },
+    {
+      "phase": "daily_probe",
+      "start_utc": "2026-11-13T18:42:30.946+00:00",
+      "http_status": 429,
+      "error": "429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199068, Requested 1949. Please try again in 7m19.344s. Need more tokens? Upgrade to Dev Tier today at https://",
+      "retry_after": 440.0,
+      "headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "874",
+        "x-ratelimit-remaining-tokens": "8000",
+        "x-ratelimit-reset-requests": "3h1m26.4s",
+        "x-ratelimit-reset-tokens": "1ms",
+        "retry-after": "440"
+      }
     }
   ],
   "header_samples": [
-    {
-      "x-ratelimit-limit-requests": "1000",
-      "x-ratelimit-limit-tokens": "8000",
-      "x-ratelimit-remaining-requests": "970",
-      "x-ratelimit-remaining-tokens": "6800",
-      "x-ratelimit-reset-requests": "43m12s",
-      "x-ratelimit-reset-tokens": "9s"
-    },
-    {
-      "x-ratelimit-limit-requests": "1000",
-      "x-ratelimit-limit-tokens": "8000",
-      "x-ratelimit-remaining-requests": "956",
-      "x-ratelimit-remaining-tokens": "5682",
-      "x-ratelimit-reset-requests": "1h3m21.6s",
-      "x-ratelimit-reset-tokens": "17.385s"
-    },
     {
       "x-ratelimit-limit-requests": "1000",
       "x-ratelimit-limit-tokens": "8000",
@@ -171,6 +171,23 @@
       "x-ratelimit-remaining-tokens": "5576",
       "x-ratelimit-reset-requests": "1h10m33.6s",
       "x-ratelimit-reset-tokens": "18.18s"
+    },
+    {
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "874",
+      "x-ratelimit-remaining-tokens": "7914",
+      "x-ratelimit-reset-requests": "3h1m26.4s",
+      "x-ratelimit-reset-tokens": "644ms"
+    },
+    {
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "874",
+      "x-ratelimit-remaining-tokens": "8000",
+      "x-ratelimit-reset-requests": "3h1m26.4s",
+      "x-ratelimit-reset-tokens": "1ms",
+      "retry-after": "440"
     }
   ],
   "recovery": [

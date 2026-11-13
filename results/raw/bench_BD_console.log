@@ -1,0 +1,48 @@
+B A1  ok           answer               ttft=780 tok=1774+140 calls=1 | 'The base Transformer used a dropout rate of\u202f0.1\u202f[Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Secti'
+B A2  ok           answer               ttft=368 tok=1464+82 calls=1 | 'Scaled dot‑product attention divides the dot products by\u202f√d_k to prevent the dot products from becoming large '
+B A3  ok           answer               ttft=1015 tok=1875+126 calls=1 | 'The big Transformer was trained for 300,000 steps, which corresponded to about 3.5\u202fdays of wall‑clock time, us'
+B A4  ok           answer               ttft=655 tok=1654+121 calls=1 | 'Learned positional embeddings did not outperform the sinusoidal positional encodings; they produced nearly ide'
+B M1  ok           answer               ttft=1177 tok=2475+155 calls=1 | 'Mimi operates at a frame rate of 12.5\u202fHz and a bitrate of about 1.1\u202fkbps [Moshi: a speech-text foundation mode'
+B M2  ok           answer               ttft=1322 tok=2176+206 calls=1 | 'Inner Monologue is a novel architectural component of Moshi that jointly models textual, semantic and acoustic'
+B M3  ok           answer               ttft=1936 tok=2449+136 calls=1 | 'Moshi’s theoretical latency is 160\u202fms, while its latency in practice is about 200\u202fms [Moshi: a speech-text fou'
+B M4  ok           answer               ttft=537 tok=2188+110 calls=1 | 'Moshi gained its full‑duplex capability by leveraging the Fisher dataset, which provides 2000\u202fhours of phone c'
+B H1  ok           answer               ttft=1566 tok=2843+109 calls=1 | 'The routing module predicts chunk boundaries by computing a similarity score between adjacent elements and usi'
+B H2  ok           answer               ttft=812 tok=2665+174 calls=1 | 'H‑Net’s ratio loss is introduced to prevent the model from collapsing to trivial compression behaviours—either'
+B H3  ok           answer               ttft=644 tok=1645+138 calls=1 | 'H‑Net employs Mamba‑2 layers in its encoder and decoder because they handle fine‑grained input data more effec'
+B H4  ok           answer               ttft=571 tok=2830+101 calls=1 | 'Removing the smoothing module caused the compression‑ratio curves to become unstable, with large fluctuations '
+B X1  ok           answer               ttft=712 tok=1819+129 calls=1 | 'The original Transformer adds sinusoidal positional encodings, computed with sine and cosine functions of vary'
+B X2  ok           answer               ttft=2049 tok=2722+242 calls=1 | 'Moshi’s hierarchy first processes text tokens (produced by a SentencePiece tokenizer) as a per‑timestep prefix'
+B X3  ok           refuse_model         ttft=872 tok=3182+167 calls=1 | 'The three papers in this library do not answer this. The provided passages do not specify the exact input unit'
+B U1  ok           refuse_model         ttft=1020 tok=1810+70 calls=1 | 'The three papers in this library do not answer this. The provided passages do not report a BLEU score for Mosh'
+B U2  ok           refuse_model         ttft=664 tok=2232+49 calls=1 | 'The three papers in this library do not answer this. The provided passages do not contain any information abou'
+B U3  ok           refuse_model         ttft=871 tok=2014+51 calls=1 | 'The three papers in this library do not answer this. The provided passages do not specify the GPU memory neede'
+D A1  ok           answer               ttft=766 tok=2758+171 calls=1 | 'The base Transformer uses a dropout rate of\u202f0.1\u202f[Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Secti'
+D A2  ok           answer               ttft=991 tok=1931+81 calls=1 | 'Scaled dot‑product attention divides the dot products by\u202f√d_k to keep their magnitude from growing too large a'
+D A3  ok           answer               ttft=963 tok=2602+134 calls=1 | 'The big Transformer was trained for 300,000 steps, which corresponded to about 3.5 days of wall‑clock time, an'
+D A4  ok           answer               ttft=2561 tok=2446+108 calls=1 | 'Learned positional embeddings did not outperform the sinusoidal encodings; they yielded nearly identical resul'
+D M1  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | ''
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\mekal\OneDrive\Desktop\Vaani_Assignment\experiments\retrieval_bench.py", line 63, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\mekal\OneDrive\Desktop\Vaani_Assignment\experiments\retrieval_bench.py", line 59, in main
+    asyncio.run(main_async(ap.parse_args()))
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mekal\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\mekal\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\mekal\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\mekal\OneDrive\Desktop\Vaani_Assignment\experiments\retrieval_bench.py", line 52, in main_async
+    await run_setting(a.mode, key, qs, f"{a.mode}-retrieval{key}-{stamp}")
+  File "C:\Users\mekal\OneDrive\Desktop\Vaani_Assignment\experiments\retrieval_bench.py", line 37, in run_setting
+    await gov.wait_until_fits(est)
+  File "C:\Users\mekal\OneDrive\Desktop\Vaani_Assignment\relay\limits.py", line 170, in wait_until_fits
+    raise LimitReject("daily", self.daily_capacity_back_in(tokens))
+relay.limits.LimitReject: daily: would need to wait 6.0s

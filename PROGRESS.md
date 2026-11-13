@@ -6,12 +6,17 @@
 | 1 Ingestion | done | `python -m relay.ingest`; papers/manifest.json: 3 PDFs, sha256, abs-page title + version check, title on PDF p1 all true |
 | 2 Retrieval | done (offline) | 4 settings A-D; `python -m experiments.retrieval_recall` -> gold-page recall 0.87 for all settings, misses X2/X3 (cross-paper) for all |
 | 4 Pipeline (mock) | done | 27/27 pytest pass (`python -m pytest -q`), ruff clean |
-| 3 Groq calibration | **blocked: needs GROQ_API_KEY in .env** | script ready: experiments/calibrate.py |
-| 5 Stand-in | not started | |
-| 6 Scheduler under load | code done, load runner not started | relay/scheduler.py |
-| 7 Experiments | not started | |
-| 8 Report | not started | |
-| 9 Submission audit | not started | |
+| 3 Groq calibration | done (2026-11-13) | 55 real requests, 28,958 tokens; results/groq_calibration.json, results/raw/groq_calibration_raw.jsonl |
+| 4 Pipeline (real) | done | relay/cli.py; 2 real smoke questions |
+| 5 Stand-in | done | standin/server.py, 9 capability tests |
+| 6 Scheduler/governor | done | token buckets, token-aware admission, degraded retrieval, TPD learned from 429 body |
+| 7a Retrieval benchmark (real) | A, B, C complete; D stopped after 4 (real TPD 429) | results/runs/groq-retrieval* |
+| 7b Stand-in scenarios | done (v2, consistent queue metric) | results/runs/standin-{steady,burst,overload,rpm_halved,daily_exhausted}-20261114* |
+| 7c Retry experiment | done: 90/min x3 policies + sweep 150/240/360 x3 | results/runs/standin-retry_*, standin-sweep_* |
+| 7d Real steady load row | done (12 offered; daily budget ran out mid-run) | results/runs/real-steady-* |
+| 7e Grading | DRAFT for A, B, C, D - needs student review | evaluation/grades.json |
+| 8 Report | done except student-only sections | report.md / report.pdf (built by scripts/build_report.py) |
+| 9 Submission audit | validate_submission OK | The_Relay_Submission/ |
 
 ## Issues found and fixed
 - Heading detection missed Attention/H-Net sections (number and title are separate bold lines in those PDFs) -> pair bold number line with next bold line.
@@ -19,3 +24,16 @@
 - Moshi appendix (pp. 53-66) and Attention appendix were labelled "References" and would have been dropped by the reference filter -> detect "Appendix X." and "Attention Visualizations".
 - Run-in paragraph labels ("Discussion.", "Related Work.") were overriding the real section -> unnumbered names ending in "." are not headings.
 - Mock provider read only the last message, so regeneration feedback broke it -> read all user messages.
+- Governor used a 60 s sliding window; Groq measured as continuous token buckets -> rewrote as buckets.
+- Burst smoke: 22/30 waited 8-11 s then were rejected -> token-aware admission at arrival + degraded retrieval.
+- Validator rejected real gpt-oss citations written as full-width brackets or with zero-width spaces -> normalise.
+- Benchmark pacing ignored per-paper re-retrieval prompt size (X3 waited 6.7 s in our limiter) -> pace on planner prompt.
+- Org id appeared in Groq 429 bodies in raw logs -> redacted.
+- Stand-in synthetic answers split sentences differently from the pipeline -> reuse pipeline's SentenceGate.
+- Stand-in release task captured global state (broken after /admin/reset) -> bind to the admitting state.
+- After a TPD 429 the governor kept the configured TPD and leaked requests past admission -> learn TPD from 429 body.
+- Peak queue counted only slot waiters (always 1) while real waiting was in the governor -> backlog = both.
+- Interrupted sweep: killing the hung runner left its parent loop alive; it launched overlapping 360/min runs against the
+  same stand-in, producing a false "retry storm". Contaminated runs superseded, re-run sequentially, lock added.
+- Real daily token limit (200,000) reached during benchmark D; benchmark now stops cleanly on daily exhaustion.
+- Provider error text was not stored in traces -> error_detail field added.

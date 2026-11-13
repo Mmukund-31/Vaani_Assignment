@@ -1,0 +1,13 @@
+[steady]   0 t=   0.0s ok           answer             ttft=608 total=881 q=1 retries=0
+[steady]   1 t=  20.0s ok           answer             ttft=1161 total=1278 q=1 retries=0
+[steady]   2 t=  40.0s rate_limited provider_429_daily ttft=None total=181 q=1 retries=0
+[steady]   3 t=  60.0s rate_limited daily_tokens       ttft=None total=15 q=1 retries=0
+[steady]   4 t=  80.0s rate_limited daily_tokens       ttft=None total=15 q=1 retries=0
+[steady]   5 t= 100.0s rate_limited daily_tokens       ttft=None total=15 q=1 retries=0
+[steady]   6 t= 120.0s ok           answer             ttft=773 total=825 q=1 retries=0
+[steady]   7 t= 140.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[steady]   8 t= 160.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[steady]   9 t= 180.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[steady]  10 t= 200.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[steady]  11 t= 220.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+== real-steady-20261114T000736: offered=12 duration=220s peak_queue=1 standin=None

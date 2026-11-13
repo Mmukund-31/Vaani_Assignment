@@ -78,6 +78,7 @@ class RequestRecord:
     start_time: str = ""                  # UTC ISO
     status: str = "ok"                    # ok | rate_limited | timeout | error
     error_type: str = ""
+    error_detail: str = ""                # provider error message (org id redacted when written)
     decision: str = ""                    # answer | refuse_no_evidence | refuse_model | refuse_unverifiable | ...
     answer: str = ""
     answer_raw: str = ""
@@ -440,17 +441,21 @@ class Pipeline:
                 return rec
             await self.generate_and_validate(rec, hits, on_release)
         except LimitReject as e:
+            rec.error_detail = str(e)[:300]
             rec.status = "rate_limited"
             rec.error_type = e.kind
             rec.decision = "reject_limit"
         except RateLimited as e:
+            rec.error_detail = str(e)[:400]
             rec.status = "rate_limited"
             rec.error_type = "provider_429_daily" if e.daily else "provider_429"
             rec.decision = "reject_limit"
         except ProviderTimeout as e:
+            rec.error_detail = str(e)[:300]
             rec.status = "timeout"
             rec.error_type = "provider_timeout" if "deadline" not in str(e) else "deadline"
         except ProviderError as e:
+            rec.error_detail = str(e)[:300]
             rec.status = "error"
             rec.error_type = type(e).__name__
         except asyncio.CancelledError:

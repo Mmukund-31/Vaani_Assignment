@@ -1,0 +1,55 @@
+{
+  "run_id": "real-steady-20261114T000736",
+  "scenario": "steady",
+  "mode": "groq",
+  "source": "real",
+  "seed": 42,
+  "spec": {
+    "shape": "constant",
+    "rate_per_min": 3.0,
+    "minutes": 4.0
+  },
+  "offered": 12,
+  "arrivals_s": [
+    0.0,
+    20.0,
+    40.0,
+    60.0,
+    80.0,
+    100.0,
+    120.0,
+    140.0,
+    160.0,
+    180.0,
+    200.0,
+    220.0
+  ],
+  "duration_s": 220.01674420014024,
+  "scheduler": {
+    "max_concurrency": 4,
+    "max_queue": 20,
+    "deadline_s": 15.0,
+    "predictive_reject": true,
+    "min_tokens_per_request": 1300
+  },
+  "retry": {
+    "mode": "backoff",
+    "max_retries": 2,
+    "base_s": 0.5,
+    "cap_s": 8.0
+  },
+  "governor_limits_configured": {
+    "rpm": 30,
+    "tpm": 8000,
+    "rpd": 1000,
+    "tpd": 200000
+  },
+  "governor_limit_changes": [],
+  "governor_provider_429s": 0,
+  "peak_queue": 1,
+  "retrieval_setting": "C:600tok/k4/rerank=yes",
+  "fallback_setting": "A",
+  "model": "openai/gpt-oss-120b",
+  "standin_config": null,
+  "standin_stats": null
+}

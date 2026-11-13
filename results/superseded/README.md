@@ -14,3 +14,13 @@ Superseded because two defects were found in them, and Table 3 must compare sett
 the governor kept its configured 200K TPD and refilled at 2.3 tok/s, so admission (which checked for 1 token)
 let 8 requests through to be rejected inside the pipeline instead of at arrival. Fix: learn the real TPD from
 the 429 body ("Limit X, Used Y") and check admission against a realistic request size (1,300 tokens).
+
+`standin-sweep_none_r360-r360-20261114T000045` - interrupted when the session paused (no config snapshot,
+not every offered request has a row). Re-run below.
+
+`sweep_r360_overlap/` - all retry-sweep runs at 360/min from 2026-11-14 00:01-00:05. After the session paused,
+the assistant stopped the hung load-runner processes but not their parent shell loop, which went on to launch
+retry_immediate and retry_backoff at 360/min concurrently with the new chain's runs against the same stand-in
+(old immediate 00:01:37-00:02:52 overlaps new none 00:01:48-00:02:51; old backoff 00:02:58-00:04:12 overlaps new
+immediate 00:02:58-00:04:13). Shared server load and mid-run /admin/reset calls contaminate both sides. All
+r360 runs re-run sequentially; experiments/load_test.py now takes a lock so two runs cannot share the stand-in.

@@ -1,0 +1,119 @@
+{
+  "run_id": "standin-rpm_halved-20261114T001321",
+  "scenario": "rpm_halved",
+  "mode": "standin",
+  "source": "stand-in",
+  "seed": 42,
+  "spec": {
+    "shape": "constant",
+    "rate_per_min": 6,
+    "minutes": 4
+  },
+  "offered": 24,
+  "arrivals_s": [
+    0.0,
+    10.0,
+    20.0,
+    30.0,
+    40.0,
+    50.0,
+    60.0,
+    70.0,
+    80.0,
+    90.0,
+    100.0,
+    110.0,
+    120.0,
+    130.0,
+    140.0,
+    150.0,
+    160.0,
+    170.0,
+    180.0,
+    190.0,
+    200.0,
+    210.0,
+    220.0,
+    230.0
+  ],
+  "duration_s": 242.73809610004537,
+  "scheduler": {
+    "max_concurrency": 4,
+    "max_queue": 20,
+    "deadline_s": 15.0,
+    "predictive_reject": true,
+    "min_tokens_per_request": 1300
+  },
+  "retry": {
+    "mode": "backoff",
+    "max_retries": 2,
+    "base_s": 0.5,
+    "cap_s": 8.0
+  },
+  "governor_limits_configured": {
+    "rpm": 30,
+    "tpm": 8000,
+    "rpd": 1000,
+    "tpd": 200000
+  },
+  "governor_limit_changes": [
+    {
+      "t": 1511128.4202781,
+      "tpm": [
+        8000,
+        4000
+      ]
+    }
+  ],
+  "governor_provider_429s": 0,
+  "peak_queue": 1,
+  "retrieval_setting": "C:600tok/k4/rerank=yes",
+  "fallback_setting": "A",
+  "model": "standin-gpt-oss-120b",
+  "standin_config": {
+    "seed": 42,
+    "ttft_base_ms": 404.0,
+    "ttft_per_prompt_token_ms": 0.102,
+    "ttft_sigma": 0.22,
+    "tokens_per_s": 560.0,
+    "tokens_per_chunk": 3,
+    "output_tokens_median": 120.0,
+    "output_tokens_sigma": 0.35,
+    "slow_prob": 0.01,
+    "slow_min": 4.0,
+    "slow_max": 12.0,
+    "stall_prob": 0.0,
+    "stall_s": 8.0,
+    "error_rate": 0.0,
+    "fail_every_nth": 0,
+    "midstream_error_rate": 0.0,
+    "load_knee": 16,
+    "load_alpha": 0.5,
+    "max_inflight": 0,
+    "rpm": 15,
+    "tpm": 4000,
+    "rpd": 1000,
+    "tpd": 200000,
+    "day_seconds": 86400.0,
+    "output_reservation_cap": 300,
+    "report_tpm_headers": true
+  },
+  "standin_stats": {
+    "requests": 14,
+    "ok": 14,
+    "429_rpm": 0,
+    "429_tpm": 0,
+    "429_rpd": 0,
+    "429_tpd": 0,
+    "500": 0,
+    "503": 0,
+    "midstream_errors": 0,
+    "abandoned": 0,
+    "peak_inflight": 1,
+    "inflight": 0,
+    "rpm_level": 14,
+    "tpm_level": 663.0525466563804,
+    "rpd_level": 988.800531841435,
+    "tpd_level": 181048.66850694417
+  }
+}

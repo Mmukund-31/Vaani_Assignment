@@ -150,5 +150,96 @@
  "groq-retrievalC-20261113T232408-U3": {
   "grade": "refused_correctly",
   "reason": "not in library; refused (trap passages retrieved, not used)"
+ },
+ "groq-retrievalB-20261114T000146-A1": {
+  "grade": "correct",
+  "reason": "0.1 + both locations; p.7-8 §5.4"
+ },
+ "groq-retrievalB-20261114T000146-A2": {
+  "grade": "correct",
+  "reason": "softmax small-gradient reason; p.4"
+ },
+ "groq-retrievalB-20261114T000146-A3": {
+  "grade": "correct",
+  "reason": "300,000 steps, 3.5 days, eight P100; p.7"
+ },
+ "groq-retrievalB-20261114T000146-A4": {
+  "grade": "correct",
+  "reason": "nearly identical; relative positions + extrapolation hypotheses both on p.6"
+ },
+ "groq-retrievalB-20261114T000146-M1": {
+  "grade": "correct",
+  "reason": "12.5 Hz, 1.1 kbps, Q=8"
+ },
+ "groq-retrievalB-20261114T000146-M2": {
+  "grade": "wrong",
+  "reason": "sentence 2 credits Inner Monologue with simultaneous user/system streams (that is multi-stream modelling) and sentence 4 repeats the Moshi-wide 'arbitrary voices' property from p.29 as an Inner Monologue property"
+ },
+ "groq-retrievalB-20261114T000146-M3": {
+  "grade": "correct",
+  "reason": "160/200 ms, delay 2 -> 1"
+ },
+ "groq-retrievalB-20261114T000146-M4": {
+  "grade": "correct",
+  "reason": "Fisher, 2000 h, separate channels; p.18"
+ },
+ "groq-retrievalB-20261114T000146-H1": {
+  "grade": "wrong",
+  "reason": "only 'a similarity score between adjacent elements'; omits cosine similarity and the 0.5 threshold required by the grading notes",
+  "borderline": true
+ },
+ "groq-retrievalB-20261114T000146-H2": {
+  "grade": "correct",
+  "reason": "trivial solutions + alpha 0.03 with the loss formula; p.8"
+ },
+ "groq-retrievalB-20261114T000146-H3": {
+  "grade": "correct",
+  "reason": "fine-grained inputs, efficiency, compression inductive bias; p.5"
+ },
+ "groq-retrievalB-20261114T000146-H4": {
+  "grade": "correct",
+  "reason": "unstable compression ratios, BPB degradation; p.18"
+ },
+ "groq-retrievalB-20261114T000146-X1": {
+  "grade": "wrong",
+  "reason": "RoPE side adds 'incorporates position directly into attention rather than by summation' - not in the cited p.7 passage",
+  "borderline": true
+ },
+ "groq-retrievalB-20261114T000146-X2": {
+  "grade": "correct",
+  "reason": "Moshi text(SentencePiece, p.15)->semantic->acoustic; H-Net bytes->chunks->recursive stages; supported, not the Temporal/Depth reference",
+  "borderline": true
+ },
+ "groq-retrievalB-20261114T000146-X3": {
+  "grade": "refused_wrongly",
+  "reason": "answerable; refused"
+ },
+ "groq-retrievalB-20261114T000146-U1": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused"
+ },
+ "groq-retrievalB-20261114T000146-U2": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused"
+ },
+ "groq-retrievalB-20261114T000146-U3": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused"
+ },
+ "groq-retrievalD-20261114T000146-A1": {
+  "grade": "correct",
+  "reason": "0.1 + both locations"
+ },
+ "groq-retrievalD-20261114T000146-A2": {
+  "grade": "correct",
+  "reason": "softmax small-gradient reason"
+ },
+ "groq-retrievalD-20261114T000146-A3": {
+  "grade": "correct",
+  "reason": "300,000 steps, 3.5 days, eight P100"
+ },
+ "groq-retrievalD-20261114T000146-A4": {
+  "grade": "correct",
+  "reason": "nearly identical + extrapolation"
  }
 }

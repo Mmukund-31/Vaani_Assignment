@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import random
 import subprocess
 import sys
@@ -83,7 +84,9 @@ def ensure_standin() -> subprocess.Popen | None:
 
 
 async def run(scenario: str, mode: str, setting: str, seed: int, sched: SchedulerConfig, retry: RetryPolicy,
-              spec: dict, standin_overrides: dict, label_suffix: str = "", fallback: str | None = "A") -> str:
+              spec: dict, standin_overrides: dict, label_suffix: str = "", fallback: str | None = "A",
+              label: str | None = None) -> str:
+    scenario = label or scenario
     rng = random.Random(seed)
     qs = json.loads((ROOT / "evaluation" / "questions.json").read_text(encoding="utf-8"))
     sched_times = arrivals(spec, rng)
@@ -150,8 +153,18 @@ def main():
     ap.add_argument("--no-predictive", action="store_true")
     ap.add_argument("--standin", default="{}", help="extra JSON overrides for the stand-in")
     ap.add_argument("--suffix", default="")
+    ap.add_argument("--label", help="scenario name written to the CSV (default: the scenario key)")
     ap.add_argument("--fallback", default="A", help="smaller retrieval setting used under token pressure ('none' to disable)")
     a = ap.parse_args()
+    lock = ROOT / "results" / ".standin.lock"
+    if a.mode == "standin":
+        # Two load runs against one stand-in contaminate each other (shared load + mid-run resets) - refuse.
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.write(fd, str(os.getpid()).encode())
+            os.close(fd)
+        except FileExistsError:
+            raise SystemExit(f"another stand-in load run holds {lock}; delete it only if no run is active")
     proc = ensure_standin() if a.mode == "standin" else None
     try:
         allspecs = {**SCENARIOS, **RETRY_SCENARIOS}
@@ -167,10 +180,12 @@ def main():
             retry = RetryPolicy(mode=spec.get("retry_mode", a.retry), max_retries=spec.get("max_retries", a.max_retries),
                                 rng=random.Random(a.seed))
             fb = None if a.fallback == "none" else a.fallback
-            asyncio.run(run(name, a.mode, a.setting, a.seed, sched, retry, spec, overrides, a.suffix, fb))
+            asyncio.run(run(name, a.mode, a.setting, a.seed, sched, retry, spec, overrides, a.suffix, fb, a.label))
     finally:
         if proc:
             proc.terminate()
+        if a.mode == "standin":
+            lock.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

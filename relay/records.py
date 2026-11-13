@@ -54,7 +54,8 @@ def row(rec: RequestRecord, *, run_id: str, scenario: str, source: str, setting_
 
 def trace(rec: RequestRecord, run_id: str, extra: dict | None = None) -> dict:
     d = {"request_id": f"{run_id}-{rec.request_id}", "question": rec.question, "status": rec.status,
-         "decision": rec.decision, "error_type": rec.error_type, "events_ms": rec.events,
+         "decision": rec.decision, "error_type": rec.error_type, "error_detail": rec.error_detail,
+         "events_ms": rec.events,
          "answer": rec.answer, "answer_raw": rec.answer_raw, "citations": rec.citations, "retrieved": rec.retrieved,
          "sentences_released": rec.sentences_released, "sentences_rejected": rec.sentences_rejected,
          "breakdown_ms": {"queue_wait": round(rec.queue_wait_ms, 1), "limiter_wait": round(rec.limiter_wait_ms, 1),

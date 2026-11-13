@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 
 from relay.factory import make_pipeline
-from relay.limits import Governor
+from relay.limits import Governor, LimitReject
 from relay.pipeline import Pipeline
 from relay.records import RunWriter, row, trace
 from relay.retrieval import SETTINGS
@@ -34,7 +34,11 @@ async def run_setting(mode: str, key: str, questions: list[dict], run_id: str) -
             # latency excludes our own throttling (first run paced on the single-search prompt: X3 waited 6.7 s)
             hits = pipe.retrieve_and_plan(Pipeline.intake(q["question"], 60.0))
             est = Governor.estimate(pipe.prompt_tokens(hits, q["question"]), pipe.max_output_tokens)
-            await gov.wait_until_fits(est)
+            try:
+                await gov.wait_until_fits(est)
+            except LimitReject as e:   # daily budget gone: stop cleanly; remaining questions are not offered
+                print(f"stopping {key}: {e}", flush=True)
+                break
         rec = Pipeline.intake(q["question"], 60.0, request_id=q["id"])
         await pipe.run(rec)
         w.write(row(rec, run_id=run_id, scenario=f"retrieval_{key}", source=pipe.provider.source,

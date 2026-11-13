@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 results/cache/
+The_Relay_Submission/
+results/.standin.lock
+_build_*/

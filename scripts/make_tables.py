@@ -26,14 +26,15 @@ CSV = ROOT / "results" / "results.csv"
 PRICE_IN, PRICE_OUT = 0.15 / 1e6, 0.60 / 1e6
 
 LOAD_ROWS = [  # (label in table, scenario name, source)
-    ("Steady (real Groq)", "steady", "real"),
+    ("Steady, real Groq (daily token budget ran out mid-run)", "steady", "real"),
     ("Steady", "steady", "stand-in"),
     ("Sudden burst", "burst", "stand-in"),
     ("Sustained overload", "overload", "stand-in"),
     ("Per-minute limit halved", "rpm_halved", "stand-in"),
     ("Daily budget exhausted", "daily_exhausted", "stand-in"),
-    ("Retry: immediate", "retry_immediate", "stand-in"),
-    ("Retry: backoff+jitter", "retry_backoff", "stand-in"),
+    ("Retry: none (90/min)", "retry_none", "stand-in"),
+    ("Retry: immediate (90/min)", "retry_immediate", "stand-in"),
+    ("Retry: backoff+jitter (90/min)", "retry_backoff", "stand-in"),
 ]
 
 
@@ -77,13 +78,13 @@ def table2(all_rows):
          "First token p50 / p95 / p99 (ms) | Total time p50 / p95 / p99 (ms) | Latency samples (n) |",
          "|---|---|---|---|---|---|---|---|"]
     b = ["| Scenario | Succeeded % | Rate-limited % | Timed out or given up % | Error % | Retries per request | "
-         "Peak queue length | Tokens per answer | Cost per 1,000 answers (list-price equiv.) |",
-         "|---|---|---|---|---|---|---|---|---|"]
+         "Peak queue length | Tokens per answer | Cost per 1,000 answers (list-price equiv.) | Degraded answers % |",
+         "|---|---|---|---|---|---|---|---|---|---|"]
     for label, scen, src in LOAD_ROWS:
         rows = [r for r in all_rows if r["scenario"] == scen and r["source"] == src]
         if not rows:
             a.append(f"| {label} | {src} | not measured | | | | | |")
-            b.append(f"| {label} | not measured | | | | | | | |")
+            b.append(f"| {label} | not measured | | | | | | | | |")
             continue
         n = len(rows)
         offs = sorted(fnum(r["offered_at_s"]) for r in rows if r["offered_at_s"])
@@ -96,10 +97,12 @@ def table2(all_rows):
         retries = np.mean([int(r["retries"]) for r in rows])
         peak = max(int(r["queue_depth"] or 0) for r in rows)
         tpa, cost = tokens_per_answer(rows)
+        ok_rows = [r for r in rows if r["status"] == "ok" and r["model_calls"] not in ("", "0")]
+        deg = 100 * sum(r["degraded"] == "1" for r in ok_rows) / len(ok_rows) if ok_rows else 0.0
         b.append(f"| {label} | {st['ok']:.1f} | {st['rate_limited']:.1f} | {st['timeout']:.1f} | {st['error']:.1f} | "
-                 f"{retries:.2f} | {peak} | {tpa:.0f} | ${cost:.3f} |" if tpa is not None else
+                 f"{retries:.2f} | {peak} | {tpa:.0f} | ${cost:.3f} | {deg:.1f} |" if tpa is not None else
                  f"| {label} | {st['ok']:.1f} | {st['rate_limited']:.1f} | {st['timeout']:.1f} | {st['error']:.1f} | "
-                 f"{retries:.2f} | {peak} | not measured | not measured |")
+                 f"{retries:.2f} | {peak} | not measured | not measured | not measured |")
     return "\n".join(a), "\n".join(b)
 
 
@@ -119,9 +122,45 @@ def table3(all_rows):
         tpa, _ = tokens_per_answer(rows)
         ft, tt, _ = latency_cells(rows, [50, 95])
         label = rows[0]["retrieval_setting"].split(":", 1)[-1]
+        if n < 18:   # benchmark stopped early (daily budget): a partial, single-paper sample would mislead
+            graded = {k: sum(r["answer_grade"] == k for r in rows) for k in ("correct", "wrong")}
+            out.append(f"| {scen[-1]}: {label} | {n} of 18 (daily budget ran out; {graded['correct']} correct, "
+                       f"{graded['wrong']} wrong, {ungraded} rate-limited) | not measured | not measured | "
+                       f"not measured | not measured | {tpa:.0f} | {ft} | {tt} |")
+            continue
         note = f" ({ungraded} ungraded)" if ungraded else ""
         out.append(f"| {scen[-1]}: {label} | {n}{note} | {g['correct']:.1f} | {g['wrong']:.1f} | "
                    f"{g['refused_correctly']:.1f} | {g['refused_wrongly']:.1f} | {tpa:.0f} | {ft} | {tt} |")
+    return "\n".join(out)
+
+
+def sweep(all_rows):
+    out = ["| Offered (per min) | Retry policy | Requests | ok % | Timed out % | p50 / p95 total (ms) | Retries per request | "
+           "Model calls sent per request |", "|---|---|---|---|---|---|---|---|"]
+    for rate in (150, 240, 360):
+        for pol in ("none", "immediate", "backoff"):
+            rows = [r for r in all_rows if r["scenario"] == f"sweep_{pol}_r{rate}"]
+            if not rows:
+                out.append(f"| {rate} | {pol} | not measured | | | | | |")
+                continue
+            n = len(rows)
+            ok = [fnum(r["total_ms"]) for r in rows if r["status"] == "ok"]
+            p = " / ".join(pcts(ok, [50, 95]))
+            out.append(f"| {rate} | {pol} | {n} | {100 * len(ok) / n:.1f} | "
+                       f"{100 * sum(r['status'] == 'timeout' for r in rows) / n:.1f} | {p} | "
+                       f"{np.mean([int(r['retries']) for r in rows]):.2f} | "
+                       f"{np.mean([int(r['model_calls'] or 0) for r in rows]):.2f} |")
+    return "\n".join(out)
+
+
+def slowest(all_rows, k=3):
+    real = [r for r in all_rows if r["source"] == "real" and r["status"] == "ok" and r["run_id"] != "calibration"]
+    real.sort(key=lambda r: -fnum(r["total_ms"]))
+    out = ["| request_id | total | first token | queue wait | limiter wait | retry wait | working (retrieval+model) | "
+           "model calls |", "|---|---|---|---|---|---|---|---|"]
+    for r in real[:k]:
+        out.append(f"| {r['request_id']} | {r['total_ms']} | {r['first_token_ms']} | {r['queue_wait_ms']} | "
+                   f"{r['limiter_wait_ms']} | {r['retry_wait_ms']} | {r['working_ms']} | {r['model_calls']} |")
     return "\n".join(out)
 
 
@@ -129,7 +168,8 @@ def main():
     rows = load()
     t2a, t2b = table2(rows)
     t3 = table3(rows)
-    md = f"## Table 2a\n\n{t2a}\n\n## Table 2b\n\n{t2b}\n\n## Table 3\n\n{t3}\n"
+    md = (f"## Table 2a\n\n{t2a}\n\n## Table 2b\n\n{t2b}\n\n## Table 3\n\n{t3}\n\n"
+          f"## Retry sweep (stand-in)\n\n{sweep(rows)}\n\n## Slowest real requests\n\n{slowest(rows)}\n")
     out = ROOT / "results" / "summaries" / "tables.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(md, encoding="utf-8")
