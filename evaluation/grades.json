@@ -1,0 +1,154 @@
+{
+ "_meta": {
+  "status": "DRAFT - assistant-proposed grades pending the student's review",
+  "guidelines": "evaluation/grading_guidelines.md",
+  "verified_against": "PDF text via papers/processed/*.json"
+ },
+ "groq-retrievalA-20261113T232408-A1": {
+  "grade": "correct",
+  "reason": "0.1 + both locations; cites p.8 §5.4"
+ },
+ "groq-retrievalA-20261113T232408-A2": {
+  "grade": "correct",
+  "reason": "softmax small-gradient reason; cites p.4 §3.2.1"
+ },
+ "groq-retrievalA-20261113T232408-A3": {
+  "grade": "correct",
+  "reason": "300,000 steps, 3.5 days, 8 P100; cites p.7 §5.2 (full-width citation brackets normalised)"
+ },
+ "groq-retrievalA-20261113T232408-A4": {
+  "grade": "correct",
+  "reason": "nearly identical + extrapolation; cites p.6 and p.9"
+ },
+ "groq-retrievalA-20261113T232408-M1": {
+  "grade": "refused_wrongly",
+  "reason": "answerable (p.11 §3.3.1); top-3 300-token chunks missed the quantization passage"
+ },
+ "groq-retrievalA-20261113T232408-M2": {
+  "grade": "wrong",
+  "reason": "definition correct, but sentence 4 credits Inner Monologue with joint semantic+acoustic modelling of arbitrary voices; p.29 attributes that to Moshi overall (misattribution passes the citation check)"
+ },
+ "groq-retrievalA-20261113T232408-M3": {
+  "grade": "correct",
+  "reason": "160/200 ms and delay 2 -> 1; cites abstract and p.26"
+ },
+ "groq-retrievalA-20261113T232408-M4": {
+  "grade": "refused_wrongly",
+  "reason": "named Fisher but said the property is not described; separate-channel property is on p.18, not retrieved"
+ },
+ "groq-retrievalA-20261113T232408-H1": {
+  "grade": "correct",
+  "reason": "cosine of adjacent q/k, p_t formula, 0.5 threshold; cites p.6 §2.2.1"
+ },
+ "groq-retrievalA-20261113T232408-H2": {
+  "grade": "correct",
+  "reason": "trivial-solution problem + alpha 0.03; cites p.8 §2.2.3"
+ },
+ "groq-retrievalA-20261113T232408-H3": {
+  "grade": "refused_wrongly",
+  "reason": "answerable (p.5 §2.1.1-2.1.2); passage not in top-3"
+ },
+ "groq-retrievalA-20261113T232408-H4": {
+  "grade": "correct",
+  "reason": "instability, fluctuating compression ratio, degradation; cites pp.17-18 §3.3"
+ },
+ "groq-retrievalA-20261113T232408-X1": {
+  "grade": "wrong",
+  "reason": "sinusoid side correct; RoPE side adds a mechanism (rotating query/key vectors) that the cited p.7 passage does not state - true in general, unsupported here",
+  "borderline": true
+ },
+ "groq-retrievalA-20261113T232408-X2": {
+  "grade": "correct",
+  "reason": "Temporal vs Depth Transformer (p.14) and H-Net encoder/main/decoder (p.2)"
+ },
+ "groq-retrievalA-20261113T232408-X3": {
+  "grade": "refused_wrongly",
+  "reason": "answerable; first draft failed validation, regeneration refused (12.2 s limiter wait)"
+ },
+ "groq-retrievalA-20261113T232408-U1": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused"
+ },
+ "groq-retrievalA-20261113T232408-U2": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused"
+ },
+ "groq-retrievalA-20261113T232408-U3": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused"
+ },
+ "groq-retrievalC-20261113T232408-A1": {
+  "grade": "correct",
+  "reason": "0.1 + both locations; cites pp.7-8 §5.4"
+ },
+ "groq-retrievalC-20261113T232408-A2": {
+  "grade": "correct",
+  "reason": "softmax small-gradient reason; cites p.4"
+ },
+ "groq-retrievalC-20261113T232408-A3": {
+  "grade": "correct",
+  "reason": "300,000 steps, 3.5 days, eight P100; cites p.7"
+ },
+ "groq-retrievalC-20261113T232408-A4": {
+  "grade": "correct",
+  "reason": "same results, not better + extrapolation; cites p.9, p.6"
+ },
+ "groq-retrievalC-20261113T232408-M1": {
+  "grade": "correct",
+  "reason": "12.5 Hz, 1.1 kbps, Q=8; cites pp.10-11 §3.3.1 and Table 2 p.23"
+ },
+ "groq-retrievalC-20261113T232408-M2": {
+  "grade": "correct",
+  "reason": "text prefix, Whisper alignment, linguistic quality, ~3x QA accuracy at marginal cost - all on pp.15-16 / p.29"
+ },
+ "groq-retrievalC-20261113T232408-M3": {
+  "grade": "correct",
+  "reason": "160/200 ms and delay 2 -> 1"
+ },
+ "groq-retrievalC-20261113T232408-M4": {
+  "grade": "correct",
+  "reason": "Fisher + separate channels; cites pp.17-18 §4.2"
+ },
+ "groq-retrievalC-20261113T232408-H1": {
+  "grade": "wrong",
+  "reason": "says only 'a similarity score between adjacent elements' (intro); omits cosine similarity, which the grading notes require; second sentence (confidence c_t) is supported by p.7",
+  "borderline": true
+ },
+ "groq-retrievalC-20261113T232408-H2": {
+  "grade": "correct",
+  "reason": "trivial solutions + alpha 0.03; cites p.8"
+ },
+ "groq-retrievalC-20261113T232408-H3": {
+  "grade": "correct",
+  "reason": "fine-grained inputs, efficiency on uncompressed sequences, ablation + compression bias; cites p.5"
+ },
+ "groq-retrievalC-20261113T232408-H4": {
+  "grade": "correct",
+  "reason": "instability, fluctuations, BPB degradation, gradient flow - p.18"
+ },
+ "groq-retrievalC-20261113T232408-X1": {
+  "grade": "correct",
+  "reason": "sinusoid (p.6) vs RoPE (p.7), no unsupported additions"
+ },
+ "groq-retrievalC-20261113T232408-X2": {
+  "grade": "correct",
+  "reason": "Moshi side describes the text->semantic->acoustic hierarchy (the paper's own 'hierarchical' wording, pp.5, 15-16) rather than the Temporal/Depth split; H-Net side correct. Supported but not the reference answer",
+  "borderline": true
+ },
+ "groq-retrievalC-20261113T232408-X3": {
+  "grade": "wrong",
+  "reason": "H-Net sentence cites p.15 §3.2 but its content (x0 sequence, embeddings) is from p.4, and 'bytes' is in neither; Transformer side vague ('text tokens', no BPE); no gold page cited for Moshi"
+ },
+ "groq-retrievalC-20261113T232408-U1": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused (trap passages retrieved, not used)"
+ },
+ "groq-retrievalC-20261113T232408-U2": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused (trap passages retrieved, not used)"
+ },
+ "groq-retrievalC-20261113T232408-U3": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused (trap passages retrieved, not used)"
+ }
+}

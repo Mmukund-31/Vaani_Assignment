@@ -1,0 +1,14 @@
+[daily_exhausted]   0 t=   0.0s ok           answer             ttft=916 total=1357 q=1 retries=0
+[daily_exhausted]   1 t=  15.0s ok           answer             ttft=967 total=1621 q=1 retries=0
+[daily_exhausted]   2 t=  30.0s ok           refuse_model       ttft=937 total=937 q=1 retries=0
+[daily_exhausted]   3 t=  45.0s ok           answer             ttft=607 total=1014 q=1 retries=0
+[daily_exhausted]   4 t=  60.0s ok           answer             ttft=939 total=1298 q=1 retries=0
+[daily_exhausted]   5 t=  75.0s ok           answer             ttft=768 total=1067 q=1 retries=0
+[daily_exhausted]   6 t=  90.0s rate_limited provider_429_daily ttft=None total=81 q=1 retries=0
+[daily_exhausted]   7 t= 105.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[daily_exhausted]   8 t= 120.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[daily_exhausted]   9 t= 135.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[daily_exhausted]  10 t= 150.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[daily_exhausted]  11 t= 165.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[daily_exhausted]  12 t= 180.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0
+[daily_exhausted]  13 t= 195.0s rate_limited daily_budget       ttft=None total=0 q=0 retries=0

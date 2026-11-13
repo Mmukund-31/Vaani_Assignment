@@ -6,7 +6,7 @@ import pytest
 
 from relay.limits import Governor, LimitReject
 from relay.pipeline import (CANNOT_VERIFY, WITHHELD, Pipeline, RetryPolicy, SentenceGate, validate_sentence)
-from relay.providers import MockProvider, ProviderTimeout, RateLimited, ServerError, parse_duration
+from relay.providers import MockProvider, RateLimited, ServerError, parse_duration
 from relay.retrieval import SETTINGS, build_index, mentioned_papers
 from relay.scheduler import Relay, SchedulerConfig
 
@@ -156,14 +156,16 @@ async def test_provider_timeout():
 
 
 # ---------------------------------------------------------------- governor
-async def test_governor_rpm_window():
+async def test_governor_rpm_bucket():
     t = [0.0]
     g = Governor(rpm=2, tpm=None, rpd=None, tpd=None, clock=lambda: t[0])
     await g.acquire(10, None)
     await g.acquire(10, None)
     with pytest.raises(LimitReject) as e:
         await g.acquire(10, deadline=5.0)
-    assert e.value.kind == "rpm" and 59 < e.value.wait_s <= 60
+    assert e.value.kind == "rpm" and e.value.wait_s == pytest.approx(30.0)   # refills 2/60 per s
+    t[0] = 30.0
+    await g.acquire(10, deadline=31.0)
 
 
 async def test_governor_tpm_and_reconcile():
@@ -172,26 +174,30 @@ async def test_governor_tpm_and_reconcile():
     r, _ = await g.acquire(800, None)
     with pytest.raises(LimitReject):
         await g.acquire(400, deadline=1.0)
-    g.reconcile(r, 300)          # actual usage was smaller than the estimate
+    g.reconcile(r, 300)          # actual usage was smaller than the estimate -> 500 returned
     await g.acquire(400, deadline=1.0)
 
 
-async def test_governor_daily_budget_and_reset():
+async def test_governor_daily_budget_refills_continuously():
     t = [0.0]
     g = Governor(rpm=None, tpm=None, rpd=None, tpd=1000, day_seconds=100, clock=lambda: t[0])
     await g.acquire(900, None)
     with pytest.raises(LimitReject) as e:
         await g.acquire(200, None)
-    assert e.value.kind == "daily_tokens"
-    t[0] = 101
+    assert e.value.kind == "daily_tokens" and e.value.wait_s == pytest.approx(10.0)
+    t[0] = 10.0
     await g.acquire(200, None)
+
+
+def test_governor_estimate_caps_output_reservation():
+    assert Governor.estimate(900, 2000) == 1200 and Governor.estimate(81, 5) == 86
 
 
 def test_governor_adopts_changed_limits_from_headers():
     g = Governor(rpm=30, tpm=8000, rpd=1000, tpd=None)
     g.observe_headers({"x-ratelimit-limit-tokens": "6000", "x-ratelimit-limit-requests": "1000",
-                       "x-ratelimit-remaining-requests": "990"})
-    assert g.tpm == 6000 and g.day_requests == 10 and g.limit_changes
+                       "x-ratelimit-remaining-requests": "990", "x-ratelimit-remaining-tokens": "100"})
+    assert g.tpm == 6000 and g.rpd_b.level <= 990 and g.tpm_b.level <= 100 and g.limit_changes
 
 
 def test_parse_duration():
@@ -234,4 +240,48 @@ async def test_daily_exhausted_rejects_at_admission_without_model_call():
     first = await relay.handle("What is the Mimi frame rate?")
     second = await relay.handle("What is the Mimi frame rate?")
     assert first.status == "ok" and second.status == "rate_limited" and second.error_type == "daily_budget"
-    assert prov.calls == 1 and "resets" in second.answer
+    assert prov.calls == 1 and "refills" in second.answer
+
+
+# ---------------------------------------------------------------- degradation + token-aware admission
+async def test_degrades_to_smaller_context_when_tokens_are_scarce():
+    g = Governor(rpm=None, tpm=4000, rpd=None, tpd=None)
+    g.tpm_b.level = 1200          # enough for a small-context request soon, not for a full one
+    p = Pipeline(MockProvider(), build_index(SETTINGS["D"]), governor=g, fallback_index=build_index(SETTINGS["A"]))
+    rec = await p.run(Pipeline.intake("What is the frame rate of the Mimi codec?", 30))
+    assert rec.degraded and rec.setting_used == "A" and rec.status == "ok"
+
+
+async def test_no_degradation_when_budget_is_fine():
+    g = Governor(rpm=None, tpm=8000, rpd=None, tpd=None)
+    p = Pipeline(MockProvider(), build_index(SETTINGS["D"]), governor=g, fallback_index=build_index(SETTINGS["A"]))
+    rec = await p.run(Pipeline.intake("What is the frame rate of the Mimi codec?", 30))
+    assert not rec.degraded and rec.setting_used == "D"
+
+
+async def test_token_aware_admission_rejects_at_arrival_not_after_waiting():
+    g = Governor(rpm=None, tpm=2600, rpd=None, tpd=None)
+    relay = Relay(_pipe(MockProvider(delay=0.05), governor=g),
+                  SchedulerConfig(max_concurrency=1, max_queue=50, deadline_s=10), governor=g)
+    recs = await asyncio.gather(*[relay.handle("What is the Mimi frame rate?") for _ in range(12)])
+    shed = [r for r in recs if r.error_type == "predicted_wait"]
+    assert shed and all(r.total_ms < 50 for r in shed)       # rejected immediately, not after waiting
+
+
+async def test_fullwidth_and_zero_width_citations_are_accepted():
+    # real gpt-oss outputs from the first benchmark run (A3 setting A, M1 setting C)
+    def resp(msgs, i):
+        from relay.providers import default_mock_answer
+        return default_mock_answer(msgs, i).replace("[P1]", "【P1】") + " Again it holds [​P1]."
+    rec = await _pipe(MockProvider(responder=resp)).run(Pipeline.intake("What dropout rate does the base Transformer use?", 20))
+    assert rec.decision == "answer" and rec.sentences_released == 2
+
+
+def test_tpd_learned_from_429_body():
+    e = RateLimited("429: on tokens per day (TPD): Limit 15000, Used 14800, Requested 2000. Please try again",
+                    daily=True)
+    assert (e.limit_kind, e.limit_value, e.limit_used) == ("TPD", 15000, 14800)
+    g = Governor(rpm=30, tpm=8000, rpd=1000, tpd=200_000)
+    g.mark_daily_exhausted(e.limit_kind, e.limit_value, e.limit_used)
+    assert g.tpd == 15000 and g.daily_exhausted(1300) == "daily_tokens"
+    assert 0 < g.daily_capacity_back_in(1300) / 60 < 24 * 60

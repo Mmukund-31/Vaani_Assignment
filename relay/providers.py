@@ -42,6 +42,11 @@ class RateLimited(ProviderError):
     def __init__(self, msg, daily: bool = False, **kw):
         super().__init__(msg, **kw)
         self.daily = daily
+        # Groq's 429 body names the limit: "... on tokens per day (TPD): Limit 200000, Used 199100, Requested 1500"
+        m = re.search(r"\((RPM|TPM|RPD|TPD)\): Limit (\d+), Used (\d+), Requested (\d+)", msg)
+        self.limit_kind = m.group(1) if m else None
+        self.limit_value = int(m.group(2)) if m else None
+        self.limit_used = int(m.group(3)) if m else None
         if daily:
             self.retryable = False
 

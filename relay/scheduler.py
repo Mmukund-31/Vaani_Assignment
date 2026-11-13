@@ -25,6 +25,7 @@ class SchedulerConfig:
     max_queue: int = 40
     deadline_s: float = 20.0
     predictive_reject: bool = True
+    min_tokens_per_request: int = 1300   # measured: ~1.0K prompt (setting A) + 300 output reservation
 
 
 class Relay:
@@ -38,6 +39,17 @@ class Relay:
         self.peak_queue = 0
         self.recent_service: deque[float] = deque(maxlen=20)   # seconds per completed request
 
+    def backlog(self) -> int:
+        """Admitted requests not yet talking to the model: waiting for a worker slot + waiting in the governor."""
+        return self.waiting + (self.governor.pending_requests if self.governor else 0)
+
+    def predicted_limit_wait(self) -> float:
+        """Rate-limit wait for a new arrival: everyone queued ahead plus this one, each charging the smallest
+        reservation we could serve them with (degraded context if available)."""
+        if not self.governor:
+            return 0.0
+        return self.governor.predicted_wait(self.waiting + 1, self.cfg.min_tokens_per_request)
+
     def predicted_wait(self) -> float:
         """Queue wait for a new arrival = (people ahead / slots) x mean recent service time.
         Service time includes rate-limiter waits, so this tightens automatically when the provider limit binds."""
@@ -48,17 +60,18 @@ class Relay:
 
     async def handle(self, question: str, request_id: str | None = None, on_release=None) -> RequestRecord:
         rec = Pipeline.intake(question, self.cfg.deadline_s, request_id)
+        rec.queue_depth = self.backlog()
         # ---- admission
-        if self.governor and self.governor.daily_exhausted():
+        if self.governor and self.governor.daily_exhausted(self.cfg.min_tokens_per_request):
             rec.status, rec.error_type, rec.decision = "rate_limited", "daily_budget", "reject_daily"
-            reset_h = self.governor.day_reset_in() / 3600
-            rec.answer = (f"Daily model budget is used up, so I can't answer new questions until it resets "
-                          f"(in about {reset_h:.1f} h). Your question was not sent to the model.")
+            back_min = self.governor.daily_capacity_back_in(self.cfg.min_tokens_per_request) / 60
+            rec.answer = (f"Daily model budget is used up, so I can't answer new questions until it refills "
+                          f"(next capacity in about {back_min:.0f} min). Your question was not sent to the model.")
             return self._finish(rec)
         if self.waiting >= self.cfg.max_queue:
             rec.status, rec.error_type, rec.decision = "rate_limited", "queue_full", "reject_queue"
             return self._finish(rec)
-        if self.cfg.predictive_reject and self.predicted_wait() > self.cfg.deadline_s * 0.8:
+        if self.cfg.predictive_reject and max(self.predicted_wait(), self.predicted_limit_wait()) > self.cfg.deadline_s * 0.8:
             rec.status, rec.error_type, rec.decision = "rate_limited", "predicted_wait", "reject_predicted"
             return self._finish(rec)
         # ---- queue + run, bounded by the person's patience
@@ -73,7 +86,8 @@ class Relay:
 
     async def _queued_run(self, rec: RequestRecord, on_release):
         self.waiting += 1
-        self.peak_queue = max(self.peak_queue, self.waiting)
+        rec.queue_depth = self.backlog()
+        self.peak_queue = max(self.peak_queue, self.backlog())
         rec.ev("queue_enter")
         t_q = time.monotonic()
         try:

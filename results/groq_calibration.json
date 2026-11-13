@@ -1,0 +1,184 @@
+{
+  "generated_utc": "2026-11-13T17:41:42.339+00:00",
+  "n_requests_total": 55,
+  "model": "openai/gpt-oss-120b",
+  "latency": {
+    "medium": {
+      "n": 8,
+      "tokens_in_mean": 850.5,
+      "tokens_out_mean": 141.375,
+      "reasoning_tokens_mean": 47.5,
+      "ttft_ms": {
+        "p50": 491.27370002679527,
+        "p90": 647.8382200468332,
+        "max": 721.9698999542743,
+        "min": 219.99839995987713
+      },
+      "total_ms": {
+        "p50": 716.8484000721946,
+        "p90": 867.8544299444184,
+        "max": 917.9086999502033,
+        "min": 299.0202000364661
+      },
+      "visible_tokens_per_s": {
+        "p50": 561.6188638584167,
+        "min": 419.54359454586006,
+        "max": 736.6650926920472
+      },
+      "inter_chunk_ms": {
+        "p50": 1.375500112771988,
+        "p99": 10.30358003918078
+      }
+    },
+    "large": {
+      "n": 6,
+      "tokens_in_mean": 2716,
+      "tokens_out_mean": 112.5,
+      "reasoning_tokens_mean": 22.5,
+      "ttft_ms": {
+        "p50": 682.1609500329942,
+        "p90": 996.3445999892429,
+        "max": 1063.7469999492168,
+        "min": 577.129099983722
+      },
+      "total_ms": {
+        "p50": 782.3586500016972,
+        "p90": 1121.969599975273,
+        "max": 1308.6820000316948,
+        "min": 662.3299999628216
+      },
+      "visible_tokens_per_s": {
+        "p50": 934.9617485681772,
+        "min": 650.9493738898791,
+        "max": 16938.318534784667
+      },
+      "inter_chunk_ms": {
+        "p50": 0.9267001878470182,
+        "p99": 5.019404012709857
+      }
+    }
+  },
+  "errors": [
+    {
+      "phase": "latency",
+      "start_utc": "2026-11-13T17:34:36.229+00:00",
+      "http_status": 429,
+      "error": "429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 4403, Requested 4662. Please try again in 7.9875s. Need more tokens? Upgrade to Dev Tier today at https://con",
+      "retry_after": 8.0,
+      "headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "991",
+        "x-ratelimit-remaining-tokens": "3597",
+        "x-ratelimit-reset-requests": "12m57.599s",
+        "x-ratelimit-reset-tokens": "33.022s",
+        "retry-after": "8"
+      }
+    },
+    {
+      "phase": "latency",
+      "start_utc": "2026-11-13T17:35:12.691+00:00",
+      "http_status": 429,
+      "error": "429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 6089, Requested 3653. Please try again in 13.065s. Need more tokens? Upgrade to Dev Tier today at https://con",
+      "retry_after": 14.0,
+      "headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-limit-tokens": "8000",
+        "x-ratelimit-remaining-requests": "988",
+        "x-ratelimit-remaining-tokens": "1911",
+        "x-ratelimit-reset-requests": "17m16.8s",
+        "x-ratelimit-reset-tokens": "45.667s",
+        "retry-after": "14"
+      }
+    },
+    {
+      "phase": "rpm_probe",
+      "start_utc": "2026-11-13T17:41:24.963+00:00",
+      "http_status": 429,
+      "error": "429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on requests per minute (RPM): Limit 30, Used 30, Requested 1. Please try again in 2s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.",
+      "retry_after": 2.0,
+      "headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "953",
+        "x-ratelimit-reset-requests": "1h7m40.8s",
+        "retry-after": "2"
+      }
+    },
+    {
+      "phase": "rpm_probe",
+      "start_utc": "2026-11-13T17:41:24.960+00:00",
+      "http_status": 429,
+      "error": "429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on requests per minute (RPM): Limit 30, Used 30, Requested 1. Please try again in 2s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.",
+      "retry_after": 2.0,
+      "headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "952",
+        "x-ratelimit-reset-requests": "1h9m7.2s",
+        "retry-after": "2"
+      }
+    },
+    {
+      "phase": "rpm_probe",
+      "start_utc": "2026-11-13T17:41:24.952+00:00",
+      "http_status": 429,
+      "error": "429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on requests per minute (RPM): Limit 30, Used 30, Requested 1. Please try again in 2s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.",
+      "retry_after": 2.0,
+      "headers": {
+        "x-ratelimit-limit-requests": "1000",
+        "x-ratelimit-remaining-requests": "953",
+        "x-ratelimit-reset-requests": "1h7m40.8s",
+        "retry-after": "2"
+      }
+    }
+  ],
+  "header_samples": [
+    {
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "970",
+      "x-ratelimit-remaining-tokens": "6800",
+      "x-ratelimit-reset-requests": "43m12s",
+      "x-ratelimit-reset-tokens": "9s"
+    },
+    {
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "956",
+      "x-ratelimit-remaining-tokens": "5682",
+      "x-ratelimit-reset-requests": "1h3m21.6s",
+      "x-ratelimit-reset-tokens": "17.385s"
+    },
+    {
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "967",
+      "x-ratelimit-remaining-tokens": "6112",
+      "x-ratelimit-reset-requests": "47m31.2s",
+      "x-ratelimit-reset-tokens": "14.16s"
+    },
+    {
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "968",
+      "x-ratelimit-remaining-tokens": "6456",
+      "x-ratelimit-reset-requests": "46m4.8s",
+      "x-ratelimit-reset-tokens": "11.58s"
+    },
+    {
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "951",
+      "x-ratelimit-remaining-tokens": "5576",
+      "x-ratelimit-reset-requests": "1h10m33.6s",
+      "x-ratelimit-reset-tokens": "18.18s"
+    }
+  ],
+  "recovery": [
+    {
+      "phase": "recovery_result",
+      "seconds_to_recover": 2.4717212999239564,
+      "polls": 1,
+      "start_utc": "2026-11-13T17:41:28.036+00:00"
+    }
+  ]
+}

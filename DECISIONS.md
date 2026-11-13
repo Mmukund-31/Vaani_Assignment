@@ -45,3 +45,33 @@ rejected (measured in the load runs).
 
 ## D9. No HTTP front door for the pipeline (deliberate)
 Pipeline runs in-process from CLI and load runner; the stand-in model is a separate FastAPI service.
+
+## D10. Model: openai/gpt-oss-120b (verified 2026-11-13 via GET /models and response headers)
+Free-tier limits confirmed for our account from headers: x-ratelimit-limit-requests=1000 (RPD),
+x-ratelimit-limit-tokens=8000 (TPM); RPM=30 from a 429 body. TPD=200K from docs only (no header).
+reasoning_effort=low: reasoning tokens averaged ~48 (medium prompts) and are billed + counted toward TPM.
+
+## D11. Governor uses token buckets, not a sliding window (changed after measurement)
+Initially a 60 s sliding window. Measurement showed Groq refills continuously: reset-tokens = used/(8000/60),
+reset-requests = 86.4 s per request (= 86400/1000), retry-after = deficit/refill-rate. A sliding window would
+leave capacity unused. Output reservation = min(max_tokens, 300) because Groq's admission charge for output
+was measured at 5 / 152 / 298 / 300 tokens for max_tokens 5 / 1000 / 2000 / 300.
+
+## D12. Token-aware admission (changed after the first burst smoke run)
+First version queued everyone and let the governor reject when a request reached the head: 22/30 burst
+requests waited 8-11 s and were then rejected. Now arrival-time prediction = (requests ahead + 1) x smallest
+reservation vs current TPM bucket level and refill rate; shed immediately if > 80% of patience.
+After the change the same burst sheds in <1 ms. Cost: prediction can be wrong (one request still waited 5.6 s
+then was rejected because later arrivals consumed tokens it was counting on).
+
+## D13. Degrade retrieval context instead of rejecting when TPM is the bottleneck
+When the predicted TPM wait for the full context exceeds 3 s and the small context (setting A, ~1.46K vs
+~2.40K tokens/answer measured) would be admitted sooner, use the small context. Who gets a weaker answer:
+whoever arrives while the minute bucket is short. Quality cost = A vs C in Table 3.
+
+## D14. Cost basis
+Free tier charges $0. "Cost per 1,000 answers" = list-price equivalent at Groq's published gpt-oss-120b price
+($0.15 / 1M input, $0.60 / 1M output; console.groq.com/docs/model/openai/gpt-oss-120b, fetched 2026-11-13).
+
+## D15. Account identifiers redacted from logs
+Groq 429 bodies contain the organization id; calibration and trace writers replace it with org_REDACTED.

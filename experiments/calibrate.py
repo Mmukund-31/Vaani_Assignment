@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 import statistics
 import time
 from datetime import datetime, timezone
@@ -34,8 +35,9 @@ def utc() -> str:
 
 def log(rec: dict) -> None:
     RAW.parent.mkdir(parents=True, exist_ok=True)
+    line = re.sub(r"org_[0-9a-z]{10,}", "org_REDACTED", json.dumps(rec))  # account identifier
     with RAW.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(rec) + "\n")
+        f.write(line + "\n")
 
 
 def prompt_of_size(kind: str, i: int) -> list[dict]:

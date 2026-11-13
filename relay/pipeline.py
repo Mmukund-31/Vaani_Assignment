@@ -31,7 +31,6 @@ from .retrieval import Hit, Index, PAPER_KEYS, SHORT, format_passages, mentioned
 
 REFUSAL_TAG = "NOT_IN_LIBRARY"
 MIN_TOP_BM25 = 4.0       # below this the library has no lexical support for the question at all
-EXPECTED_OUTPUT_TOKENS = 220  # reservation estimate; reconciled to actual usage afterwards
 
 SYSTEM_PROMPT = f"""You answer engineers' questions using ONLY the numbered passages provided from three papers:
 "Attention Is All You Need" (arXiv:1706.03762v7), "Moshi" (arXiv:2410.00037v1) and
@@ -99,6 +98,9 @@ class RequestRecord:
     retrieval_rounds: int = 0
     retrieved: list[str] = field(default_factory=list)
     http_status: int | None = None
+    degraded: bool = False
+    setting_used: str = ""
+    queue_depth: int = 0                  # backlog at admission: slot queue + governor waiters (incl. this one if queued)
     sentences_released: int = 0
     sentences_rejected: int = 0
     events: list[tuple[str, float]] = field(default_factory=list)
@@ -113,6 +115,16 @@ class RequestRecord:
 
 
 # ---------------------------------------------------------------- validation helpers
+_NORMALISE = str.maketrans({"【": "[", "】": "]", "［": "[", "］": "]",
+                            "​": None, "‌": None, "‍": None, "﻿": None, "⁠": None})
+
+
+def normalise_model_text(text: str) -> str:
+    """gpt-oss sometimes cites with full-width brackets (【P1】) or puts zero-width spaces inside [P1].
+    Measured in the first benchmark run: both made correct, cited sentences fail validation."""
+    return text.translate(_NORMALISE)
+
+
 def _norm_num(s: str) -> str:
     return s.replace(",", "").rstrip(".")
 
@@ -189,7 +201,8 @@ def render(sentence: str, label_to_hit: dict[str, Hit]) -> tuple[str, list[str]]
 class Pipeline:
     def __init__(self, provider: Provider, index: Index, governor: Governor | None = None,
                  retry: RetryPolicy | None = None, max_output_tokens: int = 400,
-                 per_call_first_token_timeout: float = 15.0, allow_regenerate: bool = True):
+                 per_call_first_token_timeout: float = 15.0, allow_regenerate: bool = True,
+                 fallback_index: Index | None = None, degrade_after_s: float = 3.0):
         self.provider = provider
         self.index = index
         self.governor = governor
@@ -197,6 +210,8 @@ class Pipeline:
         self.max_output_tokens = max_output_tokens
         self.first_token_timeout = per_call_first_token_timeout
         self.allow_regenerate = allow_regenerate
+        self.fallback_index = fallback_index   # smaller-context retrieval used when tokens are scarce
+        self.degrade_after_s = degrade_after_s
 
     # ---- stage 1
     @staticmethod
@@ -208,15 +223,38 @@ class Pipeline:
         return rec
 
     # ---- stages 2+3
-    def search_papers(self, query: str, top_k: int | None = None, papers: list[str] | None = None) -> list[Hit]:
+    def search_papers(self, query: str, top_k: int | None = None, papers: list[str] | None = None,
+                      index: Index | None = None) -> list[Hit]:
         """The retrieval TOOL."""
-        return self.index.search(query, top_k=top_k, papers=papers)
+        return (index or self.index).search(query, top_k=top_k, papers=papers)
+
+    def prompt_tokens(self, hits: list[Hit], question: str) -> int:
+        return ntokens(SYSTEM_PROMPT) + ntokens(format_passages(hits)) + ntokens(question) + 20
+
+    def choose_index(self, rec: RequestRecord) -> Index:
+        """Degrade (smaller context, fewer tokens) only when the full context would wait too long for TPM and
+        the small one would not. The person gets a weaker-but-cited answer instead of a rejection."""
+        if not (self.governor and self.fallback_index):
+            return self.index
+        full = Governor.estimate(self.prompt_tokens(self.index.search(rec.question), rec.question), self.max_output_tokens)
+        small = Governor.estimate(self.prompt_tokens(self.fallback_index.search(rec.question), rec.question),
+                                  self.max_output_tokens)
+        w_full = self.governor.predicted_wait(1, full)
+        if w_full <= self.degrade_after_s:
+            return self.index
+        if self.governor.predicted_wait(1, small) < w_full:
+            rec.degraded = True
+            rec.ev("degraded_retrieval")
+            return self.fallback_index
+        return self.index
 
     def retrieve_and_plan(self, rec: RequestRecord) -> list[Hit]:
         t0 = time.perf_counter()
         rec.ev("retrieve_start")
-        k = self.index.setting.top_k
-        hits = self.search_papers(rec.question)
+        index = self.choose_index(rec)
+        rec.setting_used = index.setting.name
+        k = index.setting.top_k
+        hits = self.search_papers(rec.question, index=index)
         rec.retrieval_rounds = 1
         named = mentioned_papers(rec.question)
         comparative = len(named) >= 2 or (COMPARE_RE.search(rec.question) is not None and len(named) != 1)
@@ -226,7 +264,7 @@ class Pipeline:
             per = max(2, math.ceil(k / len(targets)))
             merged: list[Hit] = []
             for p in targets:
-                merged.extend(self.search_papers(rec.question, top_k=per, papers=[p]))
+                merged.extend(self.search_papers(rec.question, top_k=per, papers=[p], index=index))
             hits = merged
             for n, h in enumerate(hits, 1):
                 h.label = f"P{n}"
@@ -248,7 +286,7 @@ class Pipeline:
 
     async def _call_model(self, rec: RequestRecord, messages: list[dict], on_text) -> Completion:
         """One logical model call with governor + bounded, deadline-aware retries."""
-        est = sum(ntokens(m["content"]) for m in messages) + 12 + EXPECTED_OUTPUT_TOKENS
+        est = Governor.estimate(sum(ntokens(m["content"]) + 4 for m in messages), self.max_output_tokens)
         attempt = 0
         while True:
             remaining = rec.deadline - time.monotonic()
@@ -293,7 +331,10 @@ class Pipeline:
                 if self.governor and res:
                     if isinstance(e, RateLimited):
                         self.governor.refund(res)
-                        self.governor.on_429(e.retry_after)
+                        if e.daily:
+                            self.governor.mark_daily_exhausted(e.limit_kind, e.limit_value, e.limit_used)
+                        else:
+                            self.governor.on_429(e.retry_after)
                     self.governor.observe_headers(e.headers)
                 rec.ev(f"model_call_{rec.model_calls}_error:{type(e).__name__}")
                 if rec.sentences_released > 0 or not e.retryable or attempt >= self.retry.max_retries \
@@ -343,7 +384,7 @@ class Pipeline:
                     return
                 if not state["decided"]:
                     # hold the first characters until we know whether this is a refusal
-                    state["head"] += piece
+                    state["head"] += normalise_model_text(piece)
                     h = state["head"].lstrip()
                     if len(h) < len(REFUSAL_TAG) and REFUSAL_TAG.startswith(h):
                         return
@@ -352,7 +393,7 @@ class Pipeline:
                         state["refusal"] = h
                         return
                     piece = state["head"]
-                for s in gate.feed(piece):
+                for s in gate.feed(normalise_model_text(piece)):
                     handle(s)
 
             comp = await self._call_model(rec, self._messages(rec, hits, feedback), on_text)
