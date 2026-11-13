@@ -1,0 +1,38 @@
+{
+  "A": {
+    "setting": "A:300tok/k3/rerank=no",
+    "recall": 0.8666666666666667,
+    "misses": [
+      "X2",
+      "X3"
+    ],
+    "avg_context_tokens": 724
+  },
+  "B": {
+    "setting": "B:600tok/k4/rerank=no",
+    "recall": 0.8666666666666667,
+    "misses": [
+      "X2",
+      "X3"
+    ],
+    "avg_context_tokens": 1854
+  },
+  "C": {
+    "setting": "C:600tok/k4/rerank=yes",
+    "recall": 0.8666666666666667,
+    "misses": [
+      "X2",
+      "X3"
+    ],
+    "avg_context_tokens": 1904
+  },
+  "D": {
+    "setting": "D:900tok/k5/rerank=yes",
+    "recall": 0.8666666666666667,
+    "misses": [
+      "X2",
+      "X3"
+    ],
+    "avg_context_tokens": 3203
+  }
+}

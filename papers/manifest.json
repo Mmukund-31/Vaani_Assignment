@@ -1,0 +1,59 @@
+{
+  "page_convention": "1-based PDF page index",
+  "papers": [
+    {
+      "key": "attention",
+      "arxiv_id": "1706.03762",
+      "version": "v7",
+      "title": "Attention Is All You Need",
+      "short": "Attention",
+      "pdf_url": "https://arxiv.org/pdf/1706.03762v7",
+      "file": "papers/raw/1706.03762v7.pdf",
+      "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+      "size_bytes": 2215244,
+      "num_pages": 15,
+      "title_in_pdf_page1": true,
+      "ingested_at": "2026-11-13T17:20:21.525231+00:00",
+      "abs_url": "https://arxiv.org/abs/1706.03762v7",
+      "abs_title": "Attention Is All You Need",
+      "title_matches": true,
+      "version_listed": true
+    },
+    {
+      "key": "moshi",
+      "arxiv_id": "2410.00037",
+      "version": "v1",
+      "title": "Moshi: a speech-text foundation model for real-time dialogue",
+      "short": "Moshi",
+      "pdf_url": "https://arxiv.org/pdf/2410.00037v1",
+      "file": "papers/raw/2410.00037v1.pdf",
+      "sha256": "a687144cc77bea86b0c60ae800ccb1d3e0816033fa5c7960388fe29a0dbfcfac",
+      "size_bytes": 4694312,
+      "num_pages": 66,
+      "title_in_pdf_page1": true,
+      "ingested_at": "2026-11-13T17:20:22.219563+00:00",
+      "abs_url": "https://arxiv.org/abs/2410.00037v1",
+      "abs_title": "Moshi: a speech-text foundation model for real-time dialogue",
+      "title_matches": true,
+      "version_listed": true
+    },
+    {
+      "key": "hnet",
+      "arxiv_id": "2507.07955",
+      "version": "v2",
+      "title": "Dynamic Chunking for End-to-End Hierarchical Sequence Modeling",
+      "short": "H-Net",
+      "pdf_url": "https://arxiv.org/pdf/2507.07955v2",
+      "file": "papers/raw/2507.07955v2.pdf",
+      "sha256": "04a2b32e6e82853cfc23c5db132750874a86cde99219ec6f664128f4aa83122f",
+      "size_bytes": 1375282,
+      "num_pages": 39,
+      "title_in_pdf_page1": true,
+      "ingested_at": "2026-11-13T17:20:22.479209+00:00",
+      "abs_url": "https://arxiv.org/abs/2507.07955v2",
+      "abs_title": "Dynamic Chunking for End-to-End Hierarchical Sequence Modeling",
+      "title_matches": true,
+      "version_listed": true
+    }
+  ]
+}
