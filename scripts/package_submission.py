@@ -19,11 +19,11 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "The_Relay_Submission"
 
 CSS = """
-body { font-family: sans-serif; font-size: 8.6pt; line-height: 1.3; }
+body { font-family: sans-serif; font-size: 8.4pt; line-height: 1.28; }
 h1 { font-size: 14pt; margin: 0 0 4pt 0; } h2 { font-size: 10.5pt; margin: 9pt 0 3pt 0; }
-p { margin: 0 0 4pt 0; } table { border-collapse: collapse; margin: 3pt 0 6pt 0; }
-td, th { border: 0.5pt solid #999; padding: 1.5pt 3pt; font-size: 7pt; vertical-align: top; }
-th { background-color: #eee; } code { font-family: monospace; font-size: 7.8pt; }
+p { margin: 0 0 4pt 0; } table { border-collapse: collapse; margin: 3pt 0 6pt 0; page-break-inside: avoid; }
+td, th { border: 0.5pt solid #999; padding: 1.3pt 3pt; font-size: 6.8pt; vertical-align: top; }
+th { font-weight: bold; } code { font-family: monospace; font-size: 7.8pt; }
 """
 
 
@@ -32,7 +32,7 @@ def render_pdf(md_path: Path, pdf_path: Path) -> int:
     story = pymupdf.Story(html=html, user_css=CSS)
     writer = pymupdf.DocumentWriter(str(pdf_path))
     mediabox = pymupdf.paper_rect("a4")
-    where = mediabox + (40, 40, -40, -40)
+    where = mediabox + (34, 32, -34, -32)
     pages = 0
     more = True
     while more:
@@ -63,7 +63,7 @@ def main():
     final = OUT
     OUT = ROOT / f"_build_{time.strftime('%Y%m%dT%H%M%S')}"
     OUT.mkdir()
-    for f in ("README.md", "report.md", "report.pdf", "DECISIONS.md", "PROGRESS.md", "PROJECT_PLAN.md",
+    for f in ("README.md", "report.md", "report.pdf", "DECISIONS.md", "PROGRESS.md", "PROJECT_PLAN.md", "FINAL_AUDIT.md",
               "REQUIREMENTS_TRACEABILITY.md"):
         copy(f)
     if (ROOT / "AI_CONVERSATION_HISTORY.md").exists():

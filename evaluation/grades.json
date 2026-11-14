@@ -2,8 +2,8 @@
  "_meta": {
   "status": "DRAFT - proposed by the assistant, pending the student's review and sign-off",
   "guidelines": "evaluation/grading_guidelines.md",
-  "procedure": "each answer read against its reference answer and the cited passages in papers/processed/*.json; audit 2026-11-14 re-checked all 70 grades for grade/decision consistency, answerable/unanswerable consistency, gold-page citation and arXiv version (1 flag: D/H1)",
-  "borderline_count": 10
+  "procedure": "each answer read against its reference answer and the cited passages in papers/processed/*.json; audit 2026-11-14 re-checked all 72 grades (grade/decision and answerability consistency, gold-page citation, arXiv version, one final response per question via scripts/benchmark_accounting.py); D/H1 gold-page discrepancy resolved from paper text",
+  "borderline_count": 9
  },
  "groq-retrievalA-20261113T232408-A1": {
   "grade": "correct",
@@ -261,8 +261,7 @@
  },
  "groq-retrievalD-20261114T073933-H1": {
   "grade": "correct",
-  "reason": "scaled cosine similarity between adjacent elements -> boundary probability (p.17 wording); 0.5 threshold not stated but only 'desirable' | AUDIT: cited pages (2-4, 17-18) are not on the H1 gold-page list (6-7), which the guidelines require. p.17 does state the routing module is 'based on scaled cosine similarity', so the claim is supported; the gold list was incomplete. Kept 'correct' pending the student's decision.",
-  "borderline": true
+  "reason": "scaled cosine similarity between adjacent elements -> boundary probability; supported by cited p.17 ('routing module that is based on scaled cosine similarity') and pp.2-3 ('similarity score between adjacent elements'). Gold-page discrepancy resolved by evidence: p.17 added to H1 gold pages (see questions.json audit_note)."
  },
  "groq-retrievalD-20261114T073933-H2": {
   "grade": "correct",

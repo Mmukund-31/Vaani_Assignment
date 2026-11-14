@@ -317,3 +317,31 @@ async def test_first_token_timeout_uses_time_left_after_limiter_wait():
 def test_busy_notice_handles_unbounded_wait():
     from relay.pipeline import busy_notice
     assert "ask again later" in busy_notice(float("inf")) and "12 s" in busy_notice(12.2)
+
+
+async def test_resumed_benchmark_keeps_request_ids_unique():
+    """Regression: resuming a run after a logged daily-429 attempt must not reuse that attempt's request id."""
+    import csv as _csv
+    import json as _json
+    import os
+    from experiments import retrieval_bench
+    from relay.records import COLUMNS
+    run_id = "mock-retrievalA-selftest-resume"
+    paths = [ROOT / "results" / "runs" / f"{run_id}.csv", ROOT / "results" / "traces" / f"{run_id}.jsonl"]
+    try:
+        paths[0].parent.mkdir(parents=True, exist_ok=True)
+        with paths[0].open("w", newline="", encoding="utf-8") as f:   # an interrupted run: one logged 429 for U3
+            w = _csv.DictWriter(f, COLUMNS)
+            w.writeheader()
+            w.writerow({c: "" for c in COLUMNS} | {"request_id": f"{run_id}-U3", "question_id": "U3",
+                                                   "scenario": "retrieval_A_budget_wait", "status": "rate_limited"})
+        qs = [q for q in _json.loads((ROOT / "evaluation" / "questions.json").read_text(encoding="utf-8"))
+              if q["id"] == "U3"]
+        await retrieval_bench.run_setting("mock", "A", qs, run_id, wait_daily=True, resume=True)
+        with paths[0].open(encoding="utf-8") as f:
+            ids = [r["request_id"] for r in _csv.DictReader(f)]
+        assert ids == [f"{run_id}-U3", f"{run_id}-U3-retry1"] and len(set(ids)) == len(ids)
+    finally:
+        for p in paths:
+            if p.exists():
+                os.remove(p)

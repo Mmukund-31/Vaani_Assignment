@@ -65,8 +65,8 @@ After the change the same burst sheds in <1 ms. Cost: prediction can be wrong (o
 then was rejected because later arrivals consumed tokens it was counting on).
 
 ## D13. Degrade retrieval context instead of rejecting when TPM is the bottleneck
-When the predicted TPM wait for the full context exceeds 3 s and the small context (setting A, ~1.46K vs
-~2.40K tokens/answer measured) would be admitted sooner, use the small context. Who gets a weaker answer:
+When the predicted TPM wait for the full context exceeds 3 s and the small context (setting A, 1,495 vs
+2,402 tokens/answer measured in Table 3) would be admitted sooner, use the small context. Who gets a weaker answer:
 whoever arrives while the minute bucket is short. Quality cost = A vs C in Table 3.
 
 ## D14. Cost basis

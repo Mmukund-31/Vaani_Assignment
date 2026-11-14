@@ -454,25 +454,25 @@ H‑Net consumes raw byte sequences (its input x₀ is a length‑L₀ sequence 
 **Cited gold page:** n/a; key facts: []
 
 
-## Run groq-retrievalD-20261114T000146
+## Run groq-retrievalD-20261114T073933
 
-### groq-retrievalD-20261114T000146-A1  (A1, answerable=True, decision=answer)
+### groq-retrievalD-20261114T073933-A1  (A1, answerable=True, decision=answer)
 **Q:** What dropout rate did the base Transformer use, and at which points in the network was dropout applied?
 **Reference:** P_drop = 0.1 for the base model. Dropout is applied to the output of each sub-layer before it is added to the sub-layer input and normalized, and to the sums of the embeddings and positional encodings in both encoder and decoder stacks.
 **Notes:** Must give 0.1 and both locations. Mentioning label smoothing 0.1 is fine; confusing label smoothing for dropout is wrong.
-**Answer:** The base Transformer uses a dropout rate of 0.1 [Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Section 5.4 Regularization][Attention Is All You Need, arXiv:1706.03762v7, pp. 8-9, Section 6.2 Model Variations]. Dropout is applied to the output of each sub‑layer before it is added to the sub‑layer input and normalized [Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Section 5.4 Regularization]. It is also applied to the summed token embeddings and positional encodings in both the encoder and decoder stacks [Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Section 5.4 Regularization].
-**Raw model text:** The base Transformer uses a dropout rate of 0.1 [P1][P4]. Dropout is applied to the output of each sub‑layer before it is added to the sub‑layer input and normalized [P1]. It is also applied to the summed token embeddings and positional encodings in both the encoder and decoder stacks [P1].
+**Answer:** The base Transformer used a dropout rate of 0.1 [Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Section 5.4 Regularization][Attention Is All You Need, arXiv:1706.03762v7, p. 8, Section 6.1 Machine Translation]. Dropout was applied to the output of each sub‑layer before it was added to the sub‑layer input and normalized [Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Section 5.4 Regularization]. It was also applied to the sums of the token embeddings and the positional encodings in both the encoder and decoder stacks [Attention Is All You Need, arXiv:1706.03762v7, pp. 7-8, Section 5.4 Regularization].
+**Raw model text:** The base Transformer used a dropout rate of 0.1 [P1][P2]. Dropout was applied to the output of each sub‑layer before it was added to the sub‑layer input and normalized [P1]. It was also applied to the sums of the token embeddings and the positional encodings in both the encoder and decoder stacks [P1].
 **Cited gold page:** True; key facts: [('0.1', True), ('sub-layer', False), ('embeddings', True)]
 
-### groq-retrievalD-20261114T000146-A2  (A2, answerable=True, decision=answer)
+### groq-retrievalD-20261114T073933-A2  (A2, answerable=True, decision=answer)
 **Q:** Why does scaled dot-product attention divide the dot products by the square root of d_k?
 **Reference:** For large d_k the dot products grow large in magnitude, pushing the softmax into regions with extremely small gradients; scaling by 1/sqrt(d_k) counteracts this.
 **Notes:** Must mention softmax saturation / small gradients. The paper hedges ('we suspect'); stating it as a hypothesis is ideal but not required.
-**Answer:** Scaled dot‑product attention divides the dot products by √d_k to keep their magnitude from growing too large as the dimensionality d_k increases, which would otherwise push the softmax into regions with extremely small gradients [Attention Is All You Need, arXiv:1706.03762v7, p. 4, Section 3.2.1 Scaled Dot-Product Attention].
-**Raw model text:** Scaled dot‑product attention divides the dot products by √d_k to keep their magnitude from growing too large as the dimensionality d_k increases, which would otherwise push the softmax into regions with extremely small gradients [P1].
+**Answer:** Scaled dot‑product attention divides the dot products by √d_k to keep their magnitude from growing too large, which would push the softmax into regions where its gradients become extremely small [Attention Is All You Need, arXiv:1706.03762v7, p. 4, Section 3.2.1 Scaled Dot-Product Attention].
+**Raw model text:** Scaled dot‑product attention divides the dot products by √d_k to keep their magnitude from growing too large, which would push the softmax into regions where its gradients become extremely small [P1].
 **Cited gold page:** True; key facts: [('large', True), ('softmax', True), ('gradient', True)]
 
-### groq-retrievalD-20261114T000146-A3  (A3, answerable=True, decision=answer)
+### groq-retrievalD-20261114T073933-A3  (A3, answerable=True, decision=answer)
 **Q:** How long was the big Transformer trained, in steps and wall-clock time, and on what hardware?
 **Reference:** 300,000 steps taking 3.5 days, on one machine with 8 NVIDIA P100 GPUs (step time 1.0 s).
 **Notes:** All three facts required. Giving the base model (100,000 steps / 12 hours) as the answer is wrong.
@@ -480,18 +480,246 @@ H‑Net consumes raw byte sequences (its input x₀ is a length‑L₀ sequence 
 **Raw model text:** The big Transformer was trained for 300,000 steps, which corresponded to about 3.5 days of wall‑clock time, and the training was performed on a single machine equipped with eight NVIDIA P100 GPUs [P1][P2].
 **Cited gold page:** True; key facts: [('300,000|300k|300 000', True), ('3.5 days', True), ('P100', True)]
 
-### groq-retrievalD-20261114T000146-A4  (A4, answerable=True, decision=answer)
+### groq-retrievalD-20261114T073933-A4  (A4, answerable=True, decision=answer)
 **Q:** Did learned positional embeddings beat sinusoidal positional encodings in the Transformer experiments, and why did the authors keep the sinusoidal version?
 **Reference:** No: the two produced nearly identical results (Table 3 row E). They chose sinusoids because they may allow the model to extrapolate to sequence lengths longer than those seen in training.
 **Notes:** Claiming learned embeddings were better or worse is wrong.
-**Answer:** Learned positional embeddings did not outperform the sinusoidal encodings; they yielded nearly identical results to the base model [Attention Is All You Need, arXiv:1706.03762v7, pp. 8-9, Section 6.2 Model Variations]. The authors therefore retained the sinusoidal version because they hypothesized it would let the model extrapolate to longer sequence lengths than seen during training [Attention Is All You Need, arXiv:1706.03762v7, p. 6, Section 3.5 Positional Encoding].
-**Raw model text:** Learned positional embeddings did not outperform the sinusoidal encodings; they yielded nearly identical results to the base model [P2]. The authors therefore retained the sinusoidal version because they hypothesized it would let the model extrapolate to longer sequence lengths than seen during training [P1].
+**Answer:** Learned positional embeddings did not outperform the sinusoidal encodings; they produced nearly identical results to the base model [Attention Is All You Need, arXiv:1706.03762v7, pp. 8-9, Section 6.2 Model Variations]. The authors therefore retained the sinusoidal version because they hypothesized it would let the model extrapolate to sequence lengths longer than seen during training [Attention Is All You Need, arXiv:1706.03762v7, p. 6, Section 3.5 Positional Encoding].
+**Raw model text:** Learned positional embeddings did not outperform the sinusoidal encodings; they produced nearly identical results to the base model [P2]. The authors therefore retained the sinusoidal version because they hypothesized it would let the model extrapolate to sequence lengths longer than seen during training [P1].
 **Cited gold page:** True; key facts: [('identical', True), ('extrapolat|longer', True)]
 
-### groq-retrievalD-20261114T000146-M1  (M1, answerable=True, decision=reject_limit)
+### groq-retrievalD-20261114T073933-M1  (M1, answerable=True, decision=answer)
 **Q:** What frame rate and bitrate does the Mimi codec operate at, and how many quantizers does it use?
 **Reference:** 12.5 Hz frame rate, 1.1 kbps, using Q = 8 quantizers (RVQ) each with a codebook size of 2048.
 **Notes:** All three numbers required.
+**Answer:** Mimi’s codec runs at a frame rate of 12.5 Hz and produces audio at about 1.1 kbps bitrate, using eight quantizers [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, p. 11, Section 3.3.1 Architecture][Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 9-11, Section 3.3.1 Architecture].
+**Raw model text:** Mimi’s codec runs at a frame rate of 12.5 Hz and produces audio at about 1.1 kbps bitrate, using eight quantizers [P1][P3].
+**Cited gold page:** True; key facts: [('12.5', True), ('1.1', True), ('8', False)]
+
+### groq-retrievalD-20261114T073933-M2  (M2, answerable=True, decision=answer)
+**Q:** What is Inner Monologue in Moshi and what does it improve?
+**Reference:** Moshi predicts time-aligned text tokens of its own speech as a prefix to its audio (semantic and acoustic) tokens. It significantly improves the linguistic quality/factuality of generated speech and, by changing the text-audio delay, enables streaming ASR and TTS.
+**Notes:** Must describe text tokens predicted alongside/before audio tokens. Describing it as a separate cascaded ASR->LLM->TTS pipeline is wrong.
+**Answer:** Inner Monologue is a feature of Moshi that jointly models the textual representation of the system’s own speech together with its audio tokens, inserting a text stream as a prefix to the generation of semantic tokens and aligning it to the 12.5 Hz audio‑token framerate [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 15-16, Section 3.4.4 Inner Monologue]. By providing this text‑audio scaffolding, Inner Monologue markedly raises the linguistic quality of the generated speech and, when evaluated on spoken question‑answering benchmarks, almost triples Moshi’s accuracy while only marginally increasing inference cost (adding one token per multi‑stream timestep) [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 29-30, Section 5.5 Spoken question answering].
+**Raw model text:** Inner Monologue is a feature of Moshi that jointly models the textual representation of the system’s own speech together with its audio tokens, inserting a text stream as a prefix to the generation of semantic tokens and aligning it to the 12.5 Hz audio‑token framerate [P5]. By providing this text‑audio scaffolding, Inner Monologue markedly raises the linguistic quality of the generated speech and, when evaluated on spoken question‑answering benchmarks, almost triples Moshi’s accuracy while only marginally increasing inference cost (adding one token per multi‑stream timestep) [P2].
+**Cited gold page:** True; key facts: [('text', True), ('prefix|before|aligned', True), ('quality|factual', True)]
+
+### groq-retrievalD-20261114T073933-M3  (M3, answerable=True, decision=answer)
+**Q:** What is Moshi's theoretical latency versus its latency in practice, and what acoustic delay setting gives the theoretical figure?
+**Reference:** 160 ms theoretical, about 200 ms in practice. The 160 ms comes from the 80 ms Mimi frame plus one step of acoustic delay: Moshi is pretrained with an acoustic delay of 2 and fine-tuned with an acoustic delay of 1.
+**Notes:** 160 and 200 ms required; the delay part may be partial but must not contradict the paper.
+**Answer:** Moshi achieves a theoretical latency of 160 ms and a practical latency of about 200 ms [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 1-2, Section Abstract]. This theoretical figure is obtained by using an acoustic delay of 2 timesteps during pre‑training and an acoustic delay of 1 timestep during fine‑tuning, which together yield the 160 ms latency [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 25-26, Section 5.3 Ablations on generative modeling].
+**Raw model text:** Moshi achieves a theoretical latency of 160 ms and a practical latency of about 200 ms [P2]. This theoretical figure is obtained by using an acoustic delay of 2 timesteps during pre‑training and an acoustic delay of 1 timestep during fine‑tuning, which together yield the 160 ms latency [P1].
+**Cited gold page:** True; key facts: [('160', True), ('200', True), ('delay', True)]
+
+### groq-retrievalD-20261114T073933-M4  (M4, answerable=True, decision=answer)
+**Q:** Which dataset gave Moshi its full-duplex ability, and what property of that dataset made it suitable?
+**Reference:** The Fisher dataset: about 2000 hours of phone conversations between randomly paired participants, where each side of the conversation is recorded on a separate channel, giving ground-truth separated streams. Audio was upsampled from 8 kHz to 24 kHz with AudioSR.
+**Notes:** Must name Fisher and the separate-channel property.
+**Answer:** Moshi gained its full‑duplex capability by leveraging the Fisher dataset, which provides 2000 hours of phone conversations where each participant’s audio is recorded on a separate channel, allowing ground‑truth separated streams for the model [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 17-18, Section 4.2 Audio data].
+**Raw model text:** Moshi gained its full‑duplex capability by leveraging the Fisher dataset, which provides 2000 hours of phone conversations where each participant’s audio is recorded on a separate channel, allowing ground‑truth separated streams for the model [P2].
+**Cited gold page:** True; key facts: [('Fisher', True), ('separate channel|separate', True)]
+
+### groq-retrievalD-20261114T073933-H1  (H1, answerable=True, decision=answer)
+**Q:** How does H-Net's routing module decide where to place chunk boundaries?
+**Reference:** It projects encoder outputs to q_t and k_t and computes a boundary probability p_t = 1/2 (1 - cosine_similarity(q_t, k_{t-1})) between adjacent positions; a boundary is placed when p_t >= 0.5 (p_1 = 1). Low similarity between consecutive vectors signals a context change.
+**Notes:** Cosine similarity of adjacent positions is required; threshold 0.5 desirable.
+**Answer:** The routing module predicts chunk boundaries by scoring adjacent elements with a similarity measure—specifically a scaled cosine‑similarity between their representations—to produce a boundary probability for each position [Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 2-3, Section 1 Introduction][Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 3-4, Section 1 Introduction][Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 17-18, Section 3.3 Ablation Studies].
+**Raw model text:** The routing module predicts chunk boundaries by scoring adjacent elements with a similarity measure—specifically a scaled cosine‑similarity between their representations—to produce a boundary probability for each position [P1][P2][P4].
+**Cited gold page:** True; key facts: [('cosine', True), ('adjacent|consecutive|previous', True), ('0.5', False)]
+
+### groq-retrievalD-20261114T073933-H2  (H2, answerable=True, decision=answer)
+**Q:** What problem does H-Net's ratio loss address, and what weight alpha is used for it?
+**Reference:** Without regularization the model can converge to trivial solutions, either retaining nearly all vectors or compressing excessively. The ratio loss (inspired by MoE load balancing) drives the selected fraction toward a target compression ratio N. alpha = 0.03 in all experiments.
+**Notes:** Both parts required.
+**Answer:** The ratio loss is introduced to prevent the model from collapsing to trivial compression extremes—either keeping almost every vector (eliminating speed gains) or over‑compressing and discarding essential information [Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, p. 8, Section 2.2.3 Ratio Loss]. In the combined training objective the ratio loss is weighted by α = 0.03 across all experiments [Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, p. 8, Section 2.2.3 Ratio Loss].
+**Raw model text:** The ratio loss is introduced to prevent the model from collapsing to trivial compression extremes—either keeping almost every vector (eliminating speed gains) or over‑compressing and discarding essential information [P1]. In the combined training objective the ratio loss is weighted by α = 0.03 across all experiments [P1].
+**Cited gold page:** True; key facts: [('trivial|all vectors|excessive', True), ('0.03', True)]
+
+### groq-retrievalD-20261114T073933-H3  (H3, answerable=True, decision=answer)
+**Q:** Why do H-Net's encoder and decoder networks mainly use Mamba-2 layers rather than Transformer layers?
+**Reference:** The encoder/decoder are strongly improved by SSMs, which have an inductive bias for compression; ablations over encoder-decoder layer combinations show Mamba layers are essential for effective byte-level processing (each Transformer layer was swapped for two Mamba-2 layers at matched parameters).
+**Notes:** Must give a reason grounded in the paper (compression bias or ablation evidence). Generic 'Mamba is faster' with no citation support is wrong.
+**Answer:** H‑Net’s encoder and decoder networks employ Mamba‑2 layers because they handle fine‑grained inputs effectively and give substantially improved efficiency when processing long, uncompressed sequences, leading to significantly better performance than Transformer layers on such data [Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 5-6, Section 2.1.2 Design Principles].
+**Raw model text:** H‑Net’s encoder and decoder networks employ Mamba‑2 layers because they handle fine‑grained inputs effectively and give substantially improved efficiency when processing long, uncompressed sequences, leading to significantly better performance than Transformer layers on such data [P4].
+**Cited gold page:** True; key facts: [('SSM|state space|Mamba', True), ('compression|ablation', False)]
+
+### groq-retrievalD-20261114T073933-H4  (H4, answerable=True, decision=answer)
+**Q:** What happened in the H-Net ablation when the smoothing module was removed?
+**Reference:** The smoothing module proved essential for stable training dynamics: without it, compression ratios fluctuate during training and performance (validation BPB) degrades.
+**Notes:** Must mention instability / fluctuating compression ratio.
+**Answer:** Removing the smoothing module caused training to become unstable: the compression‑ratio curves fluctuated markedly and validation bits‑per‑byte degraded, leading to substantial performance loss compared to the full model [Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 17-18, Section 3.3 Ablation Studies].
+**Raw model text:** Removing the smoothing module caused training to become unstable: the compression‑ratio curves fluctuated markedly and validation bits‑per‑byte degraded, leading to substantial performance loss compared to the full model [P1].
+**Cited gold page:** True; key facts: [('stab|fluctuat', True)]
+
+### groq-retrievalD-20261114T073933-X1  (X1, answerable=True, decision=answer)
+**Q:** How is positional information encoded in the original Transformer compared with Moshi's Helium language model?
+**Reference:** The Transformer adds fixed sinusoidal positional encodings to the input embeddings (learned embeddings gave nearly identical results). Helium uses rotary positional embeddings (RoPE).
+**Notes:** Both sides with citations to both papers required.
+**Answer:** The original Transformer adds sinusoidal positional encodings, computed with sine and cosine functions of varying frequencies, to the token embeddings so that each dimension follows a fixed sinusoid and the resulting vectors can be summed with the word embeddings [Attention Is All You Need, arXiv:1706.03762v7, p. 6, Section 3.5 Positional Encoding]. Moshi’s Helium language model replaces those sinusoids with rotation positional embeddings (RoPE), which encode position by rotating the query and key vectors in the attention mechanism rather than by adding fixed sinusoidal vectors [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, p. 7, Section 3.2.1 Architecture].
+**Raw model text:** The original Transformer adds sinusoidal positional encodings, computed with sine and cosine functions of varying frequencies, to the token embeddings so that each dimension follows a fixed sinusoid and the resulting vectors can be summed with the word embeddings [P1].  
+Moshi’s Helium language model replaces those sinusoids with rotation positional embeddings (RoPE), which encode position by rotating the query and key vectors in the attention mechanism rather than by adding fixed sinusoidal vectors [P4].
+**Cited gold page:** True; key facts: [('sinusoid|sine|cosine', True), ('RoPE|rotary|rotation', True)]
+
+### groq-retrievalD-20261114T073933-X2  (X2, answerable=True, decision=answer)
+**Q:** Moshi and H-Net both describe hierarchical models. What does each level of the hierarchy operate over in each paper?
+**Reference:** Moshi's RQ-Transformer: a large Temporal Transformer runs over time steps (12.5 Hz frames) and produces a context embedding that conditions a small Depth Transformer running over the K tokens (text + audio codebooks) within one time step. H-Net: an encoder works on raw bytes, a dynamic chunking layer compresses the sequence into fewer chunk vectors processed by the main network (possibly another nested H-Net stage), then a dechunking layer and decoder restore the original resolution.
+**Notes:** Both sides required. Claiming H-Net uses a Depth Transformer, or Moshi uses dynamic chunking, is wrong.
+**Answer:** Moshi’s hierarchy decomposes speech into a chain of three token types: first text tokens, then semantic tokens, and finally acoustic tokens, which are predicted in a hierarchical, per‑frame streaming fashion [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 5-6, Section 2 Related Work]. In H‑Net, the first level processes raw input vectors (e.g., bytes) with a small encoder, the second level operates on compressed “chunks” produced by the dynamic‑chunking module, and the third level upsamples those chunks back to the original resolution for a decoder to refine the output [Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 2-3, Section 1 Introduction][Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 3-4, Section 1 Introduction].
+**Raw model text:** Moshi’s hierarchy decomposes speech into a chain of three token types: first text tokens, then semantic tokens, and finally acoustic tokens, which are predicted in a hierarchical, per‑frame streaming fashion [P3].  
+In H‑Net, the first level processes raw input vectors (e.g., bytes) with a small encoder, the second level operates on compressed “chunks” produced by the dynamic‑chunking module, and the third level upsamples those chunks back to the original resolution for a decoder to refine the output [P5][P4].
+**Cited gold page:** True; key facts: [('Temporal', False), ('Depth', False), ('byte|chunk', True)]
+
+### groq-retrievalD-20261114T073933-X3  (X3, answerable=True, decision=reject_limit)
+**Q:** What input units does each of the three models consume: the Transformer for translation, Moshi, and H-Net?
+**Reference:** Transformer: byte-pair-encoded subword tokens (shared ~37,000 vocab for EN-DE; 32,000 word-piece vocab for EN-FR). Moshi: Mimi audio tokens (8 codebooks at 12.5 Hz) for both speakers plus text tokens for its own speech (32,000 text vocab). H-Net: raw bytes, segmented by learned dynamic chunking instead of a tokenizer.
+**Notes:** All three required; a correct but partial answer (2 of 3) is graded wrong.
 **Answer:** 
 **Raw model text:** 
-**Cited gold page:** False; key facts: [('12.5', False), ('1.1', False), ('8', False)]
+**Cited gold page:** False; key facts: [('byte-pair|BPE|word-piece|37', False), ('Mimi|audio token', False), ('byte', False)]
+
+### groq-retrievalD-20261114T073933-X3-retry1  (X3, answerable=True, decision=answer)
+**Q:** What input units does each of the three models consume: the Transformer for translation, Moshi, and H-Net?
+**Reference:** Transformer: byte-pair-encoded subword tokens (shared ~37,000 vocab for EN-DE; 32,000 word-piece vocab for EN-FR). Moshi: Mimi audio tokens (8 codebooks at 12.5 Hz) for both speakers plus text tokens for its own speech (32,000 text vocab). H-Net: raw bytes, segmented by learned dynamic chunking instead of a tokenizer.
+**Notes:** All three required; a correct but partial answer (2 of 3) is graded wrong.
+**Answer:** The Transformer translation model processes tokenized text sequences, treating each token as an input unit [Attention Is All You Need, arXiv:1706.03762v7, p. 8, Section 6.1 Machine Translation][Attention Is All You Need, arXiv:1706.03762v7, p. 2, Section 1 Introduction]. Moshi consumes aligned speech and text, where speech is broken into per‑frame predictions and text is provided as time‑aligned tokens [Moshi: a speech-text foundation model for real-time dialogue, arXiv:2410.00037v1, pp. 5-6, Section 2 Related Work]. H‑Net operates directly on raw byte streams (utf‑8 encoded bytes) without handcrafted tokenization, taking the byte sequence as its input [Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 4-5, Section 2.1.1 Components of H-Net][Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955v2, pp. 15-16, Section 3.2 Alternate Language Datasets].
+**Raw model text:** The Transformer translation model processes tokenized text sequences, treating each token as an input unit [P1][P2].  
+Moshi consumes aligned speech and text, where speech is broken into per‑frame predictions and text is provided as time‑aligned tokens [P3].  
+H‑Net operates directly on raw byte streams (utf‑8 encoded bytes) without handcrafted tokenization, taking the byte sequence as its input [P5][P6].
+**Cited gold page:** True; key facts: [('byte-pair|BPE|word-piece|37', True), ('Mimi|audio token', False), ('byte', True)]
+
+### groq-retrievalD-20261114T073933-U1  (U1, answerable=False, decision=refuse_model)
+**Q:** What BLEU score does Moshi achieve on the WMT 2014 English-to-German translation benchmark?
+**Reference:** Not in the library. Moshi is not evaluated on WMT translation; BLEU on WMT 2014 EN-DE is reported only for the Transformer (Attention paper).
+**Notes:** Trap: retrieval surfaces the Transformer's 28.4 BLEU. Attributing any BLEU score to Moshi is wrong. Refusing (optionally noting the Transformer figure belongs to a different paper) is refused_correctly.
+**Answer:** The three papers in this library do not answer this. The provided passages do not report a BLEU score for Moshi on the WMT 2014 English-to-German benchmark.
+**Raw model text:** NOT_IN_LIBRARY: The provided passages do not report a BLEU score for Moshi on the WMT 2014 English-to-German benchmark.
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U2  (U2, answerable=False, decision=reject_limit)
+**Q:** What mean opinion score (MOS) does H-Net's generated speech receive in listening tests?
+**Reference:** Not in the library. H-Net is evaluated on text, code, and DNA sequence modeling; it does not generate speech or report MOS. (Moshi reports subjective audio quality, but that is a different model.)
+**Notes:** Trap: Moshi/Mimi report MUSHRA-style audio quality scores. Attributing them to H-Net is wrong.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U2-retry1  (U2, answerable=False, decision=reject_limit)
+**Q:** What mean opinion score (MOS) does H-Net's generated speech receive in listening tests?
+**Reference:** Not in the library. H-Net is evaluated on text, code, and DNA sequence modeling; it does not generate speech or report MOS. (Moshi reports subjective audio quality, but that is a different model.)
+**Notes:** Trap: Moshi/Mimi report MUSHRA-style audio quality scores. Attributing them to H-Net is wrong.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U2-retry2  (U2, answerable=False, decision=refuse_model)
+**Q:** What mean opinion score (MOS) does H-Net's generated speech receive in listening tests?
+**Reference:** Not in the library. H-Net is evaluated on text, code, and DNA sequence modeling; it does not generate speech or report MOS. (Moshi reports subjective audio quality, but that is a different model.)
+**Notes:** Trap: Moshi/Mimi report MUSHRA-style audio quality scores. Attributing them to H-Net is wrong.
+**Answer:** The three papers in this library do not answer this. The provided passages do not contain any information about mean opinion scores (MOS) for H‑Net's generated speech.
+**Raw model text:** NOT_IN_LIBRARY: The provided passages do not contain any information about mean opinion scores (MOS) for H‑Net's generated speech.
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry1  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry2  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry3  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry4  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry5  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry6  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry7  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry8  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry9  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry10  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry11  (U3, answerable=False, decision=reject_limit)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** Daily model budget is used up, so I can't answer new questions until it refills. Your question was not sent to the model.
+**Raw model text:** 
+**Cited gold page:** n/a; key facts: []
+
+### groq-retrievalD-20261114T073933-U3-retry12  (U3, answerable=False, decision=refuse_model)
+**Q:** How much GPU memory does the big Transformer model need at inference time?
+**Reference:** Not in the library. The paper reports training hardware (8 P100 GPUs), training time, and parameter counts (213M for big in Table 3), but not inference memory.
+**Notes:** Computing memory from the parameter count is an unsupported inference and is graded wrong unless clearly labelled as not stated in the paper and the paper's actual figures are cited.
+**Answer:** The three papers in this library do not answer this. The provided passages do not specify the GPU memory required for the big Transformer model at inference time.
+**Raw model text:** NOT_IN_LIBRARY: The provided passages do not specify the GPU memory required for the big Transformer model at inference time.
+**Cited gold page:** n/a; key facts: []

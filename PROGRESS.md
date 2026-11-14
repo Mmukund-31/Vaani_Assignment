@@ -41,3 +41,11 @@
   and key. Fixed: resume would have reused the request id of the logged daily 429 (duplicate id) -> attempt numbering
   continues from existing rows. Observed: our admission estimate was below Groq's charge, so the last daily wait woke
   early 10 times (10 extra, free, daily 429s logged as retrieval_D_budget_wait).
+
+## Final audit (2026-11-14) - see FINAL_AUDIT.md
+- report.md had student edits made directly in the generated file (still showing D partial); sections ported
+  verbatim into docs/report_source.md and the report rebuilt from it.
+- Independent checks added: scripts/benchmark_accounting.py (one final response per question) and
+  scripts/crosscheck_tables.py (26 cell groups recomputed, 0 mismatches).
+- D/H1 gold-page discrepancy resolved from the paper text (p.17 added to H1 gold pages, disclosed).
+- PDF layout: 3 pages, no split tables, stray header fills removed. pandas removed (unused).

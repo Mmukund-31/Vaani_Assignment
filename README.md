@@ -12,13 +12,28 @@ question -> intake -> search_papers (BM25 tool) -> plan (refuse | per-paper re-r
 
 ## Setup (about 5 minutes)
 
+Tested with Python 3.14.4 on Windows 11. macOS/Linux commands are given for convenience but were not tested.
+
+Windows (PowerShell):
+```powershell
+py -3.14 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env       # only needed for real Groq runs
+```
+macOS / Linux:
 ```bash
-py -3.14 -m venv .venv            # any Python >= 3.12 should work
-.venv/Scripts/python -m pip install -r requirements.txt     # (bin/python on macOS/Linux)
-cp .env.example .env              # add GROQ_API_KEY and GROQ_MODEL=openai/gpt-oss-120b (only for real runs)
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+cp .env.example .env              # only needed for real Groq runs
+```
+Then (any OS, venv active):
+```bash
 python -m relay.ingest            # downloads the 3 PDFs at exact versions, verifies, writes papers/manifest.json
 python -m pytest -q               # offline: mock provider + stand-in on a local port, no API key needed
 ```
+`.env` holds `GROQ_API_KEY` and `GROQ_MODEL=openai/gpt-oss-120b`; it is git-ignored and never packaged.
 
 ## Run
 
@@ -36,6 +51,8 @@ python -m pytest -q               # offline: mock provider + stand-in on a local
 | Merge raw results | `python -m scripts.build_results` -> `results/results.csv` |
 | Tables from CSV | `python -m scripts.make_tables` -> `results/summaries/tables.md` |
 | Grading sheet | `python -m scripts.grading_sheet` -> `evaluation/grading_sheet.md` |
+| Independent checks | `python -m scripts.benchmark_accounting` / `python -m scripts.crosscheck_tables` |
+| Rebuild everything | `python -m scripts.finalize` (CSV -> tables -> report -> PDF -> package -> validation) |
 | Submission checks | `python -m scripts.validate_submission` |
 
 ## Layout
@@ -55,5 +72,7 @@ python -m pytest -q               # offline: mock provider + stand-in on a local
 - Empty CSV field = not applicable / not measured for that request (e.g. tokens for requests rejected before a
   model call; answer_grade for stand-in rows).
 - Source `real` = Groq; `stand-in` = our service. Never mixed within a row.
+
+- Edit `docs/report_source.md`, not `report.md`: the report is generated from it with tables pulled from `results.csv`.
 
 See `DECISIONS.md` for design choices and `report.md` for results.

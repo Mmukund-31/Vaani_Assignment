@@ -22,12 +22,11 @@ choice follows from that: shed at arrival, shrink context rather than reject, ne
 
 {{TABLE_1}}
 
-57 real calibration requests (51 ok, 6 × 429): 16 paced streams at two prompt sizes, a 34-request burst, a
-`max_tokens` test, and probes after the daily budget ran out mid-benchmark. Every limit is a **continuously refilling
-bucket**: each `retry-after`/reset value equals deficit ÷ refill rate. **Stand-in** (`standin/server.py`): same wire
+57 real calibration requests (51 ok, 6 × 429): paced streams at two prompt sizes, a 34-request burst, a `max_tokens`
+test, and probes after the daily budget ran out. Every limit is a **continuously refilling bucket**. **Stand-in** (`standin/server.py`): same wire
 format, headers and 429 bodies; TTFT = (404 ms + 0.102 ms × prompt tokens) × lognormal(σ 0.22), fitted to 491 ms @
 850 and 682 ms @ 2,716 tokens; ~560 tokens/s in bursts; the same four buckets and admission charge (prompt +
-min(max_tokens, 300)); seeded slow calls, stalls, 500s, broken streams and an in-flight cap. **Least like Groq:**
+min(max_tokens, 300)); seeded slow calls, stalls, 500s and broken streams. **Least like Groq:**
 slowdown under load. Groq barely slowed (34 simultaneous tiny requests: 360-630 ms vs ~410 ms alone); my curve and
 "abandoned requests keep running" are assumptions. Stand-in text is copied from the retrieved passages, so stand-in
 rows are not graded.
@@ -36,9 +35,8 @@ rows are not graded.
 
 {{TABLE_2A}}
 
-{{TABLE_2B}}
-
-Percentiles use only requests that showed an answer (n in 2a); denominators for outcomes are all offered requests.
+Percentiles use only requests that showed an answer (n in 2a); outcome denominators are all offered requests
+(90/min retry-policy rows: `results/summaries/tables.md`).
 Tails are unreliable where n is small: real steady n=3 (its p95/p99 are interpolations between 3 points), burst n=4,
 daily-exhausted n=6. "Rate-limited" splits into **provider 429s** (the model service said no) and **local rejections**
 (our admission control or governor refused before calling it): outside the two daily-budget rows, every rejection was local.
@@ -47,6 +45,8 @@ $0.60/M out); the free tier charged $0. Quality (Table 3, setting C): 72.2% corr
 refused, ~2,400 tokens per answer. **Numbers I could not have guessed:** the daily limit is a rolling bucket. After
 it ran out, a 1,949-token request was told to wait 7 min 19 s, not until midnight: one answer about every 17
 minutes. And `max_tokens` 2000 reserved only 298 output tokens at admission.
+
+{{TABLE_2B}}
 
 ## 4 Where the time goes
 
@@ -59,11 +59,11 @@ minute's bucket. ~12.96 s of 15.66 s came from retrying, and it ended in a refus
 ## 5 When a limit is hit
 
 **Per minute.** The governor keeps us under the limit before the provider has to say no: no per-minute 429 from the provider in any load run.
-At arrival a request is **delayed** (FIFO) if its predicted token wait fits 80% of its patience; gets a **weaker answer**
+A request is **delayed** (FIFO) if its predicted token wait fits 80% of its patience; gets a **weaker answer**
 (setting A, ~38% fewer tokens) if the full context would wait over 3 s and the small one would not (86% of answers in
 sustained overload); or is **dropped at arrival in under 1 ms** otherwise. Early dropping is deliberate: my first version
-queued everyone, and 22 of 30 burst requests waited 8-11 s only to be rejected. Headers re-tune limits that change
-(halved run: TPM 8000 → 4000 learned from the first response). **Per day.** No header shows TPD, so the first daily 429's
+queued everyone, and 22 of 30 burst requests waited 8-11 s only to be rejected. Headers re-tune changed limits (halved run: TPM
+8000 → 4000 learned from the first response). **Per day.** No header shows TPD, so the first daily 429's
 body ("Limit X, Used Y") sets the bucket. From then on everyone is **dropped at arrival** with a capacity message and no model
 call (stand-in: 1 provider 429, then 13 rejections at arrival; real: 1, then 8 without a model call). Nobody gets a
 weaker *model* (section 8).
@@ -76,14 +76,15 @@ Same model, prompt, validator and rubric (`evaluation/grading_guidelines.md`, re
 settings. Small pieces cause refusals (A wrongly refused 4 of 15 answerable questions); **re-ranking (B → C) adds 11
 points for 3% more tokens and no model call.** Bigger pieces (D) bought nothing: exactly C's grades (13 of 15 answerable,
 all 3 unanswerable refused) at 3,682 tokens per answer (+53%, ~2.2 instead of ~3.3 answers per minute); D also hit the
-daily limit mid-run and finished only after waiting for it to refill. **I chose C**: the same quality as D for a third
+daily limit mid-run: its 15 daily-429 attempts are logged but excluded, and each question counts once, by its final
+response (`results/summaries/benchmark_accounting.md`). **I chose C**: the same quality as D for a third
 fewer tokens, and under
 token pressure I drop single requests to A (−22 points, −38% tokens) rather than make them wait or reject them. A's
 errors are mostly honest refusals, not invented facts.
 
 ## How this library will mislead a naive retriever
 
-From `results/summaries/naive_retriever.md` (BM25 top-4, references kept, one query).
+From `results/summaries/naive_retriever.md` (naive = BM25 top-4, references kept, one query).
 **1. Shared vocabulary:** "What BLEU does Moshi get on WMT 2014?" returns four Attention BLEU passages, an easy path
 to "28.4". Per-paper routing adds Moshi passages, and every setting refused correctly. **2. One word, three meanings:**
 "What compression ratio does the model achieve?" could mean H-Net chunking, Mimi's 1.1 kbps, or quantized Moshi; both
@@ -116,23 +117,26 @@ and meets 429s near the limit; a sign of this already: during D's last daily wai
 Groq's admission charge, so the run woke 10 times a few seconds early and took 10 free daily 429s before U3 went through. If Groq slows under load, my overload and retry findings describe my stand-in, not
 Groq. **Not built, on purpose:** (1) falling back to another model when the budget is gone, because it would change
 answer quality without anyone measuring it; (2) an answer cache for burst repeats, which would add the most capacity but
-could send one wrong answer to many people. **[STUDENT: one thing new to you, in your own words.]**
+could send one wrong answer to many people.
+
+The most important thing I learned was that rate limiting is not simply a requests-per-minute problem. During Groq calibration, I observed that token consumption could become the limiting factor even when request volume was modest. Large prompts and generation reservations made requests have very different costs. This changed how I approached scheduling: I had to estimate token demand, reserve capacity before dispatch and reconcile it with actual usage. I also learned that retries are not automatically a reliability improvement. A retry can increase the waiting time of the original user and consume capacity that could have served another request. Reliability therefore requires deciding when not to retry, not just how to retry.
 
 ## Your feedback on Vaani
 
-**[STUDENT - write in your own words after visiting https://www.vaani.dev/. Factual observations you may react to
-(from `docs/vaani_site_notes.md`, fetched 2026-11-14): the homepage claims p90 ~450 ms while /developers says p50 600 ms
-and p90 900-1200 ms; pricing shows every cost layer (telephony, STT, LLM, TTS, platform; about Rs 5.66/min in the
-example); "Start free" on the homepage vs a prepaid wallet with no stated free tier on /pricing; no list of supported
-languages; pay-as-you-go allows 2 concurrent calls. What stood out: ___ What confused me: ___ One thing I would change: ___]**
+What stood out to me was that Vaani approaches voice AI as a complete product and infrastructure problem, bringing together call workflows, in-app voice, telephony integrations and developer APIs rather than treating speech recognition or synthesis as isolated components. I also liked the transparent pricing breakdown across telephony, STT, LLM and TTS.
+
+One thing that confused me was the latency messaging: the homepage highlights sub-500 ms / p90 performance, while the developer FAQ mentions p50 around 600 ms and p90 around 900–1,200 ms. I would like to understand whether these figures measure first-audio latency or the complete conversational turn, and under what workload.
+
+One thing I would change is to provide a clearer, consolidated technical performance page showing latency definitions, test conditions, concurrency limits and supported language coverage. That would help developers evaluate the platform and plan their integrations with greater confidence.
 
 ## How I worked with the assistant
 
-Full exported conversation: `AI_CONVERSATION_HISTORY.md`.
-**[STUDENT - half page, your own words; list only what you actually did.
-Three prompts that mattered most, and why: 1. ___ 2. ___ 3. ___
-One thing it got wrong that I caught, and how I verified it: ___
-One decision where I overruled it: ___
-What in this submission is distinctly mine: ___
-Evidence trail of defects found during the build (by whom is recorded in the conversation): PROGRESS.md
-"Issues found and fixed" and results/superseded/README.md.]**
+I used Claude Code throughout development as an AI coding assistant, directing it with a detailed assignment-specific master prompt and smaller prompts for implementation, debugging and evaluation.
+
+Three prompts had the greatest impact. First, the initial master prompt translated the brief into implementation phases, requirements and acceptance criteria, keeping the work focused on the actual assignment. Second, I directed the assistant to investigate retrieval failures and compare different chunk sizes, top-K values and reranking settings against the same evaluation questions. Third, I asked it to diagnose real Groq rate-limit behaviour and simulator load-test failures using the recorded response headers, traces and experiment logs.
+
+One issue I caught was a contaminated simulator experiment: an interrupted runner had left another run active, so concurrent tests shared the same simulator and produced misleading retry results. I identified the overlap from the run logs, preserved the contaminated results as superseded and reran the experiments independently.
+
+One decision I retained was to avoid falling back to another model when Groq's daily budget was exhausted. Although that could improve availability, it would change answer quality and undermine the comparison. I preferred a transparent capacity response over silently changing the model.
+
+My contribution was defining the engineering objectives, directing implementation, selecting and reviewing the architecture, evaluating the retrieval settings, analysing provider measurements, checking the generated answers against the papers and deciding the final reliability trade-offs. I used the assistant to accelerate development, but treated its code and recommendations as things to verify through source inspection and experiments.

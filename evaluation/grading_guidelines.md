@@ -26,7 +26,8 @@ Notes
    passages (papers/processed/*.json, i.e. the exact PDF text), and wrote a one-line reason per grade.
 3. Mechanical audit (2026-11-14) over all 72 graded answers: grade consistent with decision (answered vs refused)
    and with answerability; every `correct` cites a gold page; every citation carries the pinned arXiv version.
-   One flag (D/H1, gold list incomplete) - left for the student's decision.
+   One flag (D/H1): cited p.17 was missing from the gold list but its text supports the claim; p.17 added
+   to the gold list with a disclosed audit note (questions.json), grade kept `correct`.
 4. Final: the student reviews every grade, decides the borderline ones, and changes `_meta.status` to FINAL.
    Until then the grades - and every quality number derived from them - are drafts.
 
