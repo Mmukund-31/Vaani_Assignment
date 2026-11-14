@@ -28,12 +28,12 @@
 
 ## Table 3
 
-| Setting (piece size, pieces fetched, re-rank) | Questions asked | Correct and cited % | Wrong % | Correctly refused % | Refused wrongly % | Tokens per answer | First token p50 / p95 (ms) | Total time p50 / p95 (ms) |
-|---|---|---|---|---|---|---|---|---|
-| A: 300tok/k3/rerank=no | 18 | 50.0 | 11.1 | 16.7 | 22.2 | 1495 | 695 / 3780 | 806 / 3780 |
-| B: 600tok/k4/rerank=no | 18 | 61.1 | 16.7 | 16.7 | 5.6 | 2340 | 842 / 1953 | 884 / 2049 |
-| C: 600tok/k4/rerank=yes | 18 | 72.2 | 11.1 | 16.7 | 0.0 | 2402 | 786 / 1439 | 839 / 1579 |
-| D: 900tok/k5/rerank=yes | 5 of 18 (daily budget ran out; 4 correct, 0 wrong, 1 rate-limited) | not measured | not measured | not measured | not measured | 2558 | 977 / 2325 | 977 / 2383 |
+| Setting (piece size, pieces fetched, re-rank) | Questions asked | Correct and cited % | Wrong % | Correctly refused % | Refused wrongly % | Correct on answerable | Tokens per answer | First token p50 / p95 (ms) | Total time p50 / p95 (ms) |
+|---|---|---|---|---|---|---|---|---|---|
+| A: 300tok/k3/rerank=no | 18 | 50.0 | 11.1 | 16.7 | 22.2 | 9/15 | 1495 | 695 / 3780 | 806 / 3780 |
+| B: 600tok/k4/rerank=no | 18 | 61.1 | 16.7 | 16.7 | 5.6 | 11/15 | 2340 | 842 / 1953 | 884 / 2049 |
+| C: 600tok/k4/rerank=yes | 18 | 72.2 | 11.1 | 16.7 | 0.0 | 13/15 | 2402 | 786 / 1439 | 839 / 1579 |
+| D: 900tok/k5/rerank=yes | 16 | 81.2 | 12.5 | 6.2 | 0.0 | 13/15 | 3746 | 697 / 925 | 798 / 1019 |
 
 ## Retry sweep (stand-in)
 
@@ -54,5 +54,5 @@
 | request_id | total | first token | queue wait | limiter wait | retry wait | working (retrieval+model) | model calls |
 |---|---|---|---|---|---|---|---|
 | groq-retrievalA-20261113T232408-X3 | 15657.9 | 15657.9 | 0.0 | 12195.8 | 0.0 | 3460.0 | 2 |
-| groq-retrievalD-20261114T000146-A4 | 2628.2 | 2560.8 | 0.0 | 0.0 | 0.0 | 2626.2 | 1 |
 | groq-retrievalC-20261113T232408-M1 | 2430.7 | 2390.1 | 0.0 | 0.0 | 0.0 | 2429.0 | 1 |
+| groq-retrievalB-20261114T000146-X2 | 2130.8 | 2049.0 | 0.0 | 0.0 | 0.0 | 2129.5 | 1 |

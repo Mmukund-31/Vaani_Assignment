@@ -1,0 +1,20 @@
+07:39:34 D A1         ok           answer               ttft=874 tok=2758+140 calls=1 | 'The base Transformer used a dropout rate of\u202f0.1\u202f[Attention Is All You Need, arXiv:1706.03762v7, pp. '
+07:39:35 D A2         ok           answer               ttft=691 tok=1931+77 calls=1 | 'Scaled dot‑product attention divides the dot products by\u202f√d_k to keep their magnitude from growing t'
+07:39:36 D A3         ok           answer               ttft=818 tok=2602+135 calls=1 | 'The big Transformer was trained for 300,000 steps, which corresponded to about 3.5 days of wall‑cloc'
+07:39:55 D A4         ok           answer               ttft=718 tok=2446+114 calls=1 | 'Learned positional embeddings did not outperform the sinusoidal encodings; they produced nearly iden'
+07:40:31 D M1         ok           answer               ttft=1078 tok=4709+96 calls=1 | 'Mimi’s codec runs at a frame rate of 12.5\u202fHz and produces audio at about 1.1\u202fkbps bitrate, using eig'
+07:41:00 D M2         ok           answer               ttft=644 tok=3720+189 calls=1 | 'Inner Monologue is a feature of Moshi that jointly models the textual representation of the system’s'
+07:41:32 D M3         ok           answer               ttft=703 tok=4101+172 calls=1 | 'Moshi achieves a theoretical latency of\u202f160\u202fms and a practical latency of about\u202f200\u202fms [Moshi: a spe'
+07:41:51 D M4         ok           answer               ttft=680 tok=2391+101 calls=1 | 'Moshi gained its full‑duplex capability by leveraging the Fisher dataset, which provides 2000\u202fhours '
+07:42:27 D H1         ok           answer               ttft=872 tok=4709+114 calls=1 | 'The routing module predicts chunk boundaries by scoring adjacent elements with a similarity measure—'
+07:43:04 D H2         ok           answer               ttft=513 tok=4766+126 calls=1 | 'The ratio loss is introduced to prevent the model from collapsing to trivial compression extremes—ei'
+07:43:31 D H3         ok           answer               ttft=509 tok=3540+93 calls=1 | 'H‑Net’s encoder and decoder networks employ Mamba‑2 layers because they handle fine‑grained inputs e'
+07:44:06 D H4         ok           answer               ttft=635 tok=4520+87 calls=1 | 'Removing the smoothing module caused training to become unstable: the compression‑ratio curves fluct'
+07:44:33 D X1         ok           answer               ttft=766 tok=3566+140 calls=1 | 'The original Transformer adds sinusoidal positional encodings, computed with sine and cosine functio'
+07:45:09 D X2         ok           answer               ttft=688 tok=4536+183 calls=1 | 'Moshi’s hierarchy decomposes speech into a chain of three token types: first text tokens, then seman'
+07:45:42 D X3         rate_limited reject_limit         ttft=None tok=0+0 calls=1 | '429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED'
+D X3: daily 429, sleeping 91s then asking again
+07:47:14 D X3-retry1  ok           answer               ttft=858 tok=4289+313 calls=1 | 'The Transformer translation model processes tokenized text sequences, treating each token as an inpu'
+D U1: daily budget short, sleeping 1495s
+08:12:10 D U1         ok           refuse_model         ttft=400 tok=3201+71 calls=1 | 'The three papers in this library do not answer this. The provided passages do not report a BLEU scor'
+D U2: daily budget short, sleeping 1786s

@@ -1,0 +1,4 @@
+01:05:33 D A1         ok           answer               ttft=1525 tok=5574+313 calls=2 | 'The base Transformer uses a dropout rate of\u202fPdrop\u202f=\u202f0.1\u202f[Attention Is All You Need, arXiv:1706.03762'
+01:05:35 D A2         ok           answer               ttft=742 tok=1931+83 calls=1 | 'Scaled dot‑product attention divides the dot products by\u202f√d_k to prevent the dot products from becom'
+01:05:55 D A3         rate_limited reject_limit         ttft=None tok=0+0 calls=1 | '429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED'
+D A3: daily 429, sleeping 1043s then asking again

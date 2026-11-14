@@ -10,11 +10,11 @@
 | 4 Pipeline (real) | done | relay/cli.py; 2 real smoke questions |
 | 5 Stand-in | done | standin/server.py, 9 capability tests |
 | 6 Scheduler/governor | done | token buckets, token-aware admission, degraded retrieval, TPD learned from 429 body |
-| 7a Retrieval benchmark (real) | A, B, C complete; D stopped after 4 (real TPD 429) | results/runs/groq-retrieval* |
+| 7a Retrieval benchmark (real) | A, B, C: 18 questions each; D: 16 questions | results/runs/groq-retrieval* |
 | 7b Stand-in scenarios | done (v2, consistent queue metric) | results/runs/standin-{steady,burst,overload,rpm_halved,daily_exhausted}-20261114* |
 | 7c Retry experiment | done: 90/min x3 policies + sweep 150/240/360 x3 | results/runs/standin-retry_*, standin-sweep_* |
 | 7d Real steady load row | done (12 offered; daily budget ran out mid-run) | results/runs/real-steady-* |
-| 7e Grading | DRAFT for A, B, C, D - needs student review | evaluation/grades.json |
+| 7e Grading | DRAFT for A, B, C, D (70 answers) - needs student review | evaluation/grades.json |
 | 8 Report | done except student-only sections | report.md / report.pdf (built by scripts/build_report.py) |
 | 9 Submission audit | validate_submission OK | The_Relay_Submission/ |
 

@@ -102,16 +102,19 @@ weaker *model* (section 8).
 
 **Table 3: Retrieval settings (real Groq)**
 
-| Setting (piece size, pieces fetched, re-rank) | Questions asked | Correct and cited % | Wrong % | Correctly refused % | Refused wrongly % | Tokens per answer | First token p50 / p95 (ms) | Total time p50 / p95 (ms) |
-|---|---|---|---|---|---|---|---|---|
-| A: 300tok/k3/rerank=no | 18 | 50.0 | 11.1 | 16.7 | 22.2 | 1495 | 695 / 3780 | 806 / 3780 |
-| B: 600tok/k4/rerank=no | 18 | 61.1 | 16.7 | 16.7 | 5.6 | 2340 | 842 / 1953 | 884 / 2049 |
-| C: 600tok/k4/rerank=yes | 18 | 72.2 | 11.1 | 16.7 | 0.0 | 2402 | 786 / 1439 | 839 / 1579 |
-| D: 900tok/k5/rerank=yes | 5 of 18 (daily budget ran out; 4 correct, 0 wrong, 1 rate-limited) | not measured | not measured | not measured | not measured | 2558 | 977 / 2325 | 977 / 2383 |
+| Setting (piece size, pieces fetched, re-rank) | Questions asked | Correct and cited % | Wrong % | Correctly refused % | Refused wrongly % | Correct on answerable | Tokens per answer | First token p50 / p95 (ms) | Total time p50 / p95 (ms) |
+|---|---|---|---|---|---|---|---|---|---|
+| A: 300tok/k3/rerank=no | 18 | 50.0 | 11.1 | 16.7 | 22.2 | 9/15 | 1495 | 695 / 3780 | 806 / 3780 |
+| B: 600tok/k4/rerank=no | 18 | 61.1 | 16.7 | 16.7 | 5.6 | 11/15 | 2340 | 842 / 1953 | 884 / 2049 |
+| C: 600tok/k4/rerank=yes | 18 | 72.2 | 11.1 | 16.7 | 0.0 | 13/15 | 2402 | 786 / 1439 | 839 / 1579 |
+| D: 900tok/k5/rerank=yes | 16 | 81.2 | 12.5 | 6.2 | 0.0 | 13/15 | 3746 | 697 / 925 | 798 / 1019 |
 
 Same model, prompt, validator and rubric (`evaluation/grading_guidelines.md`, reasons in `grades.json`) for all
 settings. Small pieces cause refusals (A wrongly refused 4 of 15 answerable questions); **re-ranking (B → C) adds 11
-points for 3% more tokens and no model call.** D ran out of daily budget after 4 questions. **I chose C**, and under
+points for 3% more tokens and no model call.** Bigger pieces (D, 16 questions) got the same 13 of 15 answerable
+questions right as C, but at 3,746 tokens per answer (+56%), which cuts the account to ~2 answers per minute and runs out
+the daily budget sooner. Compare on the "correct on answerable" column: D's percentages have a different denominator.
+**I chose C**, and under
 token pressure I drop single requests to A (−22 points, −38% tokens) rather than make them wait or reject them. A's
 errors are mostly honest refusals, not invented facts.
 

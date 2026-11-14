@@ -16,6 +16,7 @@ Conventions (also stated in the report):
 from __future__ import annotations
 
 import csv
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -24,6 +25,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 CSV = ROOT / "results" / "results.csv"
 PRICE_IN, PRICE_OUT = 0.15 / 1e6, 0.60 / 1e6
+ANSWERABLE = {q["id"] for q in __import__("json").loads((ROOT / "evaluation" / "questions.json").read_text(encoding="utf-8"))
+              if q["answerable"]}
 
 LOAD_ROWS = [  # (label in table, scenario name, source)
     ("Steady, real Groq (daily token budget ran out mid-run)", "steady", "real"),
@@ -108,9 +111,9 @@ def table2(all_rows):
 
 def table3(all_rows):
     out = ["| Setting (piece size, pieces fetched, re-rank) | Questions asked | Correct and cited % | Wrong % | "
-           "Correctly refused % | Refused wrongly % | Tokens per answer | First token p50 / p95 (ms) | "
-           "Total time p50 / p95 (ms) |", "|---|---|---|---|---|---|---|---|---|"]
-    settings = sorted({r["scenario"] for r in all_rows if r["scenario"].startswith("retrieval_")})
+           "Correctly refused % | Refused wrongly % | Correct on answerable | Tokens per answer | First token p50 / p95 (ms) | "
+           "Total time p50 / p95 (ms) |", "|---|---|---|---|---|---|---|---|---|---|"]
+    settings = sorted({r["scenario"] for r in all_rows if re.fullmatch(r"retrieval_[A-Z]", r["scenario"])})
     for scen in settings:
         rows = [r for r in all_rows if r["scenario"] == scen and r["source"] == "real"]
         if not rows:
@@ -121,16 +124,12 @@ def table3(all_rows):
         ungraded = sum(not r["answer_grade"] for r in rows)
         tpa, _ = tokens_per_answer(rows)
         ft, tt, _ = latency_cells(rows, [50, 95])
+        answerable = [r for r in rows if r["question_id"] in ANSWERABLE]
+        ans_n, ans_ok = len(answerable), sum(r["answer_grade"] == "correct" for r in answerable)
         label = rows[0]["retrieval_setting"].split(":", 1)[-1]
-        if n < 18:   # benchmark stopped early (daily budget): a partial, single-paper sample would mislead
-            graded = {k: sum(r["answer_grade"] == k for r in rows) for k in ("correct", "wrong")}
-            out.append(f"| {scen[-1]}: {label} | {n} of 18 (daily budget ran out; {graded['correct']} correct, "
-                       f"{graded['wrong']} wrong, {ungraded} rate-limited) | not measured | not measured | "
-                       f"not measured | not measured | {tpa:.0f} | {ft} | {tt} |")
-            continue
         note = f" ({ungraded} ungraded)" if ungraded else ""
         out.append(f"| {scen[-1]}: {label} | {n}{note} | {g['correct']:.1f} | {g['wrong']:.1f} | "
-                   f"{g['refused_correctly']:.1f} | {g['refused_wrongly']:.1f} | {tpa:.0f} | {ft} | {tt} |")
+                   f"{g['refused_correctly']:.1f} | {g['refused_wrongly']:.1f} | {ans_ok}/{ans_n} | {tpa:.0f} | {ft} | {tt} |")
     return "\n".join(out)
 
 

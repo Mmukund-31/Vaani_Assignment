@@ -226,20 +226,71 @@
   "grade": "refused_correctly",
   "reason": "not in library; refused"
  },
- "groq-retrievalD-20261114T000146-A1": {
+ "groq-retrievalD-20261114T073933-A1": {
   "grade": "correct",
-  "reason": "0.1 + both locations"
+  "reason": "0.1 + both locations; pp.7-8 §5.4"
  },
- "groq-retrievalD-20261114T000146-A2": {
+ "groq-retrievalD-20261114T073933-A2": {
   "grade": "correct",
-  "reason": "softmax small-gradient reason"
+  "reason": "softmax small-gradient reason; p.4"
  },
- "groq-retrievalD-20261114T000146-A3": {
+ "groq-retrievalD-20261114T073933-A3": {
   "grade": "correct",
-  "reason": "300,000 steps, 3.5 days, eight P100"
+  "reason": "300,000 steps, 3.5 days, eight P100; p.7"
  },
- "groq-retrievalD-20261114T000146-A4": {
+ "groq-retrievalD-20261114T073933-A4": {
   "grade": "correct",
-  "reason": "nearly identical + extrapolation"
+  "reason": "nearly identical + extrapolation; pp.8-9, p.6"
+ },
+ "groq-retrievalD-20261114T073933-M1": {
+  "grade": "correct",
+  "reason": "12.5 Hz, 1.1 kbps, eight quantizers; p.11 §3.3.1"
+ },
+ "groq-retrievalD-20261114T073933-M2": {
+  "grade": "correct",
+  "reason": "text prefix aligned to 12.5 Hz, linguistic quality, ~3x QA accuracy at one extra token per step; pp.15-16, 29-30 - attributions correct"
+ },
+ "groq-retrievalD-20261114T073933-M3": {
+  "grade": "correct",
+  "reason": "160/200 ms, delay 2 -> 1"
+ },
+ "groq-retrievalD-20261114T073933-M4": {
+  "grade": "correct",
+  "reason": "Fisher, 2000 h, separate channels; pp.17-18"
+ },
+ "groq-retrievalD-20261114T073933-H1": {
+  "grade": "correct",
+  "reason": "scaled cosine similarity between adjacent elements -> boundary probability (p.17 wording); 0.5 threshold not stated but only 'desirable'"
+ },
+ "groq-retrievalD-20261114T073933-H2": {
+  "grade": "correct",
+  "reason": "trivial extremes + alpha 0.03; p.8"
+ },
+ "groq-retrievalD-20261114T073933-H3": {
+  "grade": "correct",
+  "reason": "fine-grained inputs, efficiency on uncompressed sequences, outperform Transformer layers (ablation claim on p.5)"
+ },
+ "groq-retrievalD-20261114T073933-H4": {
+  "grade": "correct",
+  "reason": "unstable, fluctuating compression ratio, BPB degradation; pp.17-18"
+ },
+ "groq-retrievalD-20261114T073933-X1": {
+  "grade": "wrong",
+  "reason": "RoPE side adds 'rotating the query and key vectors' - not in the cited p.7 passage (same unsupported elaboration as A/X1, B/X1)",
+  "borderline": true
+ },
+ "groq-retrievalD-20261114T073933-X2": {
+  "grade": "correct",
+  "reason": "Moshi text->semantic->acoustic chain (p.5 wording); H-Net encoder/chunks/decoder (pp.2-4); same reading as B/C X2",
+  "borderline": true
+ },
+ "groq-retrievalD-20261114T073933-X3-retry1": {
+  "grade": "wrong",
+  "reason": "covers all three models but does not identify the units: Transformer 'tokenized text' (no BPE), Moshi 'per-frame predictions' (no audio tokens); H-Net bytes correct",
+  "borderline": true
+ },
+ "groq-retrievalD-20261114T073933-U1": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused (Attention BLEU passages retrieved, not attributed to Moshi)"
  }
 }

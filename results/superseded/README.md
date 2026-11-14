@@ -24,3 +24,13 @@ retry_immediate and retry_backoff at 360/min concurrently with the new chain's r
 (old immediate 00:01:37-00:02:52 overlaps new none 00:01:48-00:02:51; old backoff 00:02:58-00:04:12 overlaps new
 immediate 00:02:58-00:04:13). Shared server load and mid-run /admin/reset calls contaminate both sides. All
 r360 runs re-run sequentially; experiments/load_test.py now takes a lock so two runs cannot share the stand-in.
+
+`groq-retrievalD-20261114T000146` - first setting-D run; the real daily token budget (200,000) ran out after 4 of 18
+questions (M1 got the TPD 429). Superseded by groq-retrievalD-20261114T073933, a D run that sleeps through daily exhaustion
+(`retrieval_bench --wait-daily`): daily 429s are logged under scenario retrieval_D_budget_wait and the same
+question is asked again once the rolling bucket has refilled.
+
+`groq-retrievalD-20261114T010530` - second D attempt (--wait-daily), launched as a detached process. It answered A1 and
+A2, logged a daily 429 on A3, began a 1,043 s budget wait and was then killed with no error output (the background
+process did not survive the session going idle). Superseded by groq-retrievalD-20261114T073933, started at 07:39 the next
+morning when the rolling daily bucket had refilled.

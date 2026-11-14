@@ -69,7 +69,10 @@ weaker *model* (section 8).
 
 Same model, prompt, validator and rubric (`evaluation/grading_guidelines.md`, reasons in `grades.json`) for all
 settings. Small pieces cause refusals (A wrongly refused 4 of 15 answerable questions); **re-ranking (B → C) adds 11
-points for 3% more tokens and no model call.** D ran out of daily budget after 4 questions. **I chose C**, and under
+points for 3% more tokens and no model call.** Bigger pieces (D, 16 questions) got the same 13 of 15 answerable
+questions right as C, but at 3,746 tokens per answer (+56%), which cuts the account to ~2 answers per minute and runs out
+the daily budget sooner. Compare on the "correct on answerable" column: D's percentages have a different denominator.
+**I chose C**, and under
 token pressure I drop single requests to A (−22 points, −38% tokens) rather than make them wait or reject them. A's
 errors are mostly honest refusals, not invented facts.
 
