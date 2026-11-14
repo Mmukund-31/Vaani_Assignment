@@ -49,6 +49,18 @@ COMPARE_RE = re.compile(r"\b(compare|compared|comparison|both|each of|versus|vs\
 CITE_RE = re.compile(r"\[(P\d+(?:\s*[,;]\s*P\d+)*)\]")
 NUM_RE = re.compile(r"(?<![A-Za-z\[])(\d+(?:[.,]\d+)*)")
 WITHHELD = "(The rest of this answer was withheld because it could not be verified against the papers.)"
+BUSY_DAILY = ("Daily model budget is used up, so I can't answer new questions until it refills. "
+              "Your question was not sent to the model.")
+FAILED_NOTICE = "The model service did not answer in time, and nothing unverified was sent. Please ask again."
+
+
+def busy_notice(wait_s: float) -> str:
+    if not math.isfinite(wait_s) or wait_s > 3600:   # request larger than a whole bucket, or no estimate
+        return "Too many questions are being answered right now, so yours was not queued. Please ask again later."
+    return (f"Too many questions are being answered right now; yours would have waited about {max(1, round(wait_s))} s, "
+            f"so it was not queued. Please ask again in about {max(1, round(wait_s))} s.")
+
+
 CANNOT_VERIFY = "I could not produce an answer I could verify against the papers, so I am not giving one."
 
 
@@ -79,6 +91,7 @@ class RequestRecord:
     status: str = "ok"                    # ok | rate_limited | timeout | error
     error_type: str = ""
     error_detail: str = ""                # provider error message (org id redacted when written)
+    notice: str = ""                      # what the person is told when no answer text was released
     decision: str = ""                    # answer | refuse_no_evidence | refuse_model | refuse_unverifiable | ...
     answer: str = ""
     answer_raw: str = ""
@@ -302,6 +315,7 @@ class Pipeline:
                     rec.limiter_wait_ms += (time.monotonic() - t_w) * 1000
                 if waited > 0.01:
                     rec.ev("limiter_wait_end")
+            remaining = rec.deadline - time.monotonic()   # recompute: the governor may have waited
             rec.ev(f"model_call_{rec.model_calls + 1}_start")
             rec.model_calls += 1
             t0 = time.monotonic()
@@ -445,26 +459,30 @@ class Pipeline:
             rec.status = "rate_limited"
             rec.error_type = e.kind
             rec.decision = "reject_limit"
+            rec.notice = BUSY_DAILY if e.kind.startswith("daily") else busy_notice(e.wait_s)
         except RateLimited as e:
             rec.error_detail = str(e)[:400]
             rec.status = "rate_limited"
             rec.error_type = "provider_429_daily" if e.daily else "provider_429"
             rec.decision = "reject_limit"
+            rec.notice = BUSY_DAILY if e.daily else busy_notice(e.retry_after or 60)
         except ProviderTimeout as e:
             rec.error_detail = str(e)[:300]
             rec.status = "timeout"
             rec.error_type = "provider_timeout" if "deadline" not in str(e) else "deadline"
+            rec.notice = FAILED_NOTICE
         except ProviderError as e:
             rec.error_detail = str(e)[:300]
             rec.status = "error"
             rec.error_type = type(e).__name__
+            rec.notice = FAILED_NOTICE
         except asyncio.CancelledError:
             rec.status = "timeout"
             rec.error_type = "user_gave_up"
             raise
         finally:
             rec.total_ms = (time.monotonic() - rec.arrival) * 1000
-            rec.answer = " ".join(rec.released)
+            rec.answer = " ".join(rec.released) or rec.notice
             rec.ev("done")
         return rec
 

@@ -18,3 +18,34 @@ D X3: daily 429, sleeping 91s then asking again
 D U1: daily budget short, sleeping 1495s
 08:12:10 D U1         ok           refuse_model         ttft=400 tok=3201+71 calls=1 | 'The three papers in this library do not answer this. The provided passages do not report a BLEU scor'
 D U2: daily budget short, sleeping 1786s
+08:36:45 D U2         rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U2: daily 429, sleeping 5s then asking again
+08:36:50 D U2-retry1  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U2: daily 429, sleeping 5s then asking again
+08:36:56 D U2-retry2  ok           refuse_model         ttft=808 tok=4027+50 calls=1 | 'The three papers in this library do not answer this. The provided passages do not contain any inform'
+D U3: daily budget short, sleeping 920s
+08:37:22 D U3         rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 895s then asking again
+08:49:24 D U3-retry1  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 173s then asking again
+08:52:17 D U3-retry2  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:22 D U3-retry3  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:27 D U3-retry4  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:32 D U3-retry5  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:37 D U3-retry6  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:42 D U3-retry7  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:47 D U3-retry8  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:53 D U3-retry9  rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:52:58 D U3-retry10 rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:53:03 D U3-retry11 rate_limited reject_limit         ttft=None tok=0+0 calls=1 | 429: {"error":{"message":"Rate limit reached for model `openai/gpt-oss-120b` in organization `org_REDACTED` service tier `on_demand` on tokens
+D U3: daily 429, sleeping 5s then asking again
+08:53:08 D U3-retry12 ok           refuse_model         ttft=420 tok=2207+49 calls=1 | 'The three papers in this library do not answer this. The provided passages do not specify the GPU me'

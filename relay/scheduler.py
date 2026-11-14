@@ -16,7 +16,7 @@ from collections import deque
 from dataclasses import dataclass
 
 from .limits import Governor
-from .pipeline import Pipeline, RequestRecord
+from .pipeline import FAILED_NOTICE, Pipeline, RequestRecord, busy_notice
 
 
 @dataclass
@@ -70,9 +70,12 @@ class Relay:
             return self._finish(rec)
         if self.waiting >= self.cfg.max_queue:
             rec.status, rec.error_type, rec.decision = "rate_limited", "queue_full", "reject_queue"
+            rec.answer = busy_notice(max(self.predicted_wait(), self.predicted_limit_wait(), 1.0))
             return self._finish(rec)
-        if self.cfg.predictive_reject and max(self.predicted_wait(), self.predicted_limit_wait()) > self.cfg.deadline_s * 0.8:
+        predicted = max(self.predicted_wait(), self.predicted_limit_wait())
+        if self.cfg.predictive_reject and predicted > self.cfg.deadline_s * 0.8:
             rec.status, rec.error_type, rec.decision = "rate_limited", "predicted_wait", "reject_predicted"
+            rec.answer = busy_notice(predicted)
             return self._finish(rec)
         # ---- queue + run, bounded by the person's patience
         try:
@@ -80,7 +83,7 @@ class Relay:
         except asyncio.TimeoutError:
             rec.status, rec.error_type = "timeout", "user_gave_up"
             rec.total_ms = (time.monotonic() - rec.arrival) * 1000
-            rec.answer = " ".join(rec.released)
+            rec.answer = " ".join(rec.released) or FAILED_NOTICE
             rec.ev("gave_up")
         return self._finish(rec)
 

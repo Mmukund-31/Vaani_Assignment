@@ -10,7 +10,9 @@ reference lists excluded) → **plan** (branch: refuse with no model call if not
 search for comparison questions; smaller context when tokens are short) → **generate** (one streamed call, passages
 labelled `[P1..Pk]`) → **validate while streaming** (each sentence must cite a retrieved label and its numbers must
 appear in that passage; only validated sentences are shown; one regeneration if the first fails). Code turns labels into
-`[Title, arXiv:IDvN, p. X, Section Y]`, so a citation to a non-existent page cannot happen. A scheduler (bounded FIFO,
+`[Title, arXiv:IDvN, p. X, Section Y]`, so a citation to a non-existent page cannot happen. What this does *not* prove
+is that the passage supports the sentence's meaning: 5 graded answers passed the validator yet credited a claim to the
+wrong subject or added an unsupported mechanism (A/M2, B/M2, A/X1, B/X1, D/X1); only grading catches those. A scheduler (bounded FIFO,
 admission control) and a governor (RPM/TPM/RPD/TPD token buckets) sit in front of the model.
 **The decision that shaped it most:** the bottleneck is the free tier's **8,000 tokens/minute**, not speed. Groq
 answers in ~0.8 s, but an answer costs ~2,400 tokens, so the account serves ~3.3 answers/minute. Every other
@@ -36,7 +38,10 @@ rows are not graded.
 
 {{TABLE_2B}}
 
-Percentiles use requests that showed an answer (n in 2a); the real steady row has 3, so its tails mean little.
+Percentiles use only requests that showed an answer (n in 2a); denominators for outcomes are all offered requests.
+Tails are unreliable where n is small: real steady n=3 (its p95/p99 are interpolations between 3 points), burst n=4,
+daily-exhausted n=6. "Rate-limited" splits into **provider 429s** (the model service said no) and **local rejections**
+(our admission control or governor refused before calling it): outside the two daily-budget rows, every rejection was local.
 First token = arrival → first *validated* sentence on screen, waits included. Cost = list price ($0.15/M in,
 $0.60/M out); the free tier charged $0. Quality (Table 3, setting C): 72.2% correct and cited, all 3 unanswerable
 refused, ~2,400 tokens per answer. **Numbers I could not have guessed:** the daily limit is a rolling bucket. After
@@ -53,7 +58,7 @@ minute's bucket. ~12.96 s of 15.66 s came from retrying, and it ended in a refus
 
 ## 5 When a limit is hit
 
-**Per minute.** The governor keeps us under the limit before the provider has to say no: zero provider 429s in every stand-in run.
+**Per minute.** The governor keeps us under the limit before the provider has to say no: no per-minute 429 from the provider in any load run.
 At arrival a request is **delayed** (FIFO) if its predicted token wait fits 80% of its patience; gets a **weaker answer**
 (setting A, ~38% fewer tokens) if the full context would wait over 3 s and the small one would not (86% of answers in
 sustained overload); or is **dropped at arrival in under 1 ms** otherwise. Early dropping is deliberate: my first version
@@ -69,10 +74,10 @@ weaker *model* (section 8).
 
 Same model, prompt, validator and rubric (`evaluation/grading_guidelines.md`, reasons in `grades.json`) for all
 settings. Small pieces cause refusals (A wrongly refused 4 of 15 answerable questions); **re-ranking (B → C) adds 11
-points for 3% more tokens and no model call.** Bigger pieces (D, 16 questions) got the same 13 of 15 answerable
-questions right as C, but at 3,746 tokens per answer (+56%), which cuts the account to ~2 answers per minute and runs out
-the daily budget sooner. Compare on the "correct on answerable" column: D's percentages have a different denominator.
-**I chose C**, and under
+points for 3% more tokens and no model call.** Bigger pieces (D) bought nothing: exactly C's grades (13 of 15 answerable,
+all 3 unanswerable refused) at 3,682 tokens per answer (+53%, ~2.2 instead of ~3.3 answers per minute); D also hit the
+daily limit mid-run and finished only after waiting for it to refill. **I chose C**: the same quality as D for a third
+fewer tokens, and under
 token pressure I drop single requests to A (−22 points, −38% tokens) rather than make them wait or reject them. A's
 errors are mostly honest refusals, not invented facts.
 
@@ -102,23 +107,32 @@ At 3 pm the daily budget is gone. The question returns in 0.1 ms with, verbatim 
 *"Daily model budget is used up, so I can't answer new questions until it refills (next capacity in about 5 min).
 Your question was not sent to the model."* No partial or unverified text and no other model; the minutes come from
 the measured refill rate. Anyone already streaming still gets their validated sentences.
-**[STUDENT: decide whether also to show the matching pages from retrieval, which needs no model, as "where to look".]**
 
 ## 8 What I'm unsure about, what I left out, what I learned
 
 **Least certain:** that Groq reserves only ~300 output tokens at admission and does not slow under concurrency (4 data
 points, one 34-request burst). If it reserves `max_tokens`, my governor under-reserves by up to 100 tokens per call
-and meets 429s near the limit. If Groq slows under load, my overload and retry findings describe my stand-in, not
+and meets 429s near the limit; a sign of this already: during D's last daily wait our estimate was slightly below
+Groq's admission charge, so the run woke 10 times a few seconds early and took 10 free daily 429s before U3 went through. If Groq slows under load, my overload and retry findings describe my stand-in, not
 Groq. **Not built, on purpose:** (1) falling back to another model when the budget is gone, because it would change
 answer quality without anyone measuring it; (2) an answer cache for burst repeats, which would add the most capacity but
 could send one wrong answer to many people. **[STUDENT: one thing new to you, in your own words.]**
 
 ## Your feedback on Vaani
 
-**[STUDENT: your own view after visiting https://www.vaani.dev/; factual notes in `docs/vaani_site_notes.md`.]**
+**[STUDENT - write in your own words after visiting https://www.vaani.dev/. Factual observations you may react to
+(from `docs/vaani_site_notes.md`, fetched 2026-11-14): the homepage claims p90 ~450 ms while /developers says p50 600 ms
+and p90 900-1200 ms; pricing shows every cost layer (telephony, STT, LLM, TTS, platform; about Rs 5.66/min in the
+example); "Start free" on the homepage vs a prepaid wallet with no stated free tier on /pricing; no list of supported
+languages; pay-as-you-go allows 2 concurrent calls. What stood out: ___ What confused me: ___ One thing I would change: ___]**
 
 ## How I worked with the assistant
 
-**[STUDENT: attach AI_CONVERSATION_HISTORY.md and write the half page: three prompts that mattered, one thing it got
-wrong that you caught, one decision you overruled, what is distinctly yours. Logged candidates: PROGRESS.md
+Full exported conversation: `AI_CONVERSATION_HISTORY.md`.
+**[STUDENT - half page, your own words; list only what you actually did.
+Three prompts that mattered most, and why: 1. ___ 2. ___ 3. ___
+One thing it got wrong that I caught, and how I verified it: ___
+One decision where I overruled it: ___
+What in this submission is distinctly mine: ___
+Evidence trail of defects found during the build (by whom is recorded in the conversation): PROGRESS.md
 "Issues found and fixed" and results/superseded/README.md.]**

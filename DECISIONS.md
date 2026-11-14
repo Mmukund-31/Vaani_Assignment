@@ -77,7 +77,8 @@ Free tier charges $0. "Cost per 1,000 answers" = list-price equivalent at Groq's
 Groq 429 bodies contain the organization id; calibration and trace writers replace it with org_REDACTED.
 
 ## D16. Retrieval setting C (600-token pieces, 4 fetched, lexical re-rank), fallback A
-Measured on real Groq (Table 3): C and D both answered 13 of 15 answerable questions correctly; D costs 3,746 tokens
-per answer vs C's 2,402 (+56%), i.e. ~2 vs ~3.3 answers per minute under the 8,000 TPM limit. Re-ranking (B -> C)
+Measured on real Groq (Table 3, all 18 questions per setting): C and D received identical grades (72.2% correct and
+cited, 13 of 15 answerable, 3 of 3 unanswerable refused); D costs 3,682 tokens per answer vs C's 2,402 (+53%), i.e.
+~2.2 vs ~3.3 answers per minute under the 8,000 TPM limit. Re-ranking (B -> C)
 added 2 correct answers for +3% tokens and no model call. A (1,495 tokens) is the degraded mode: 9/15 correct,
 errors mostly refusals rather than invented facts.

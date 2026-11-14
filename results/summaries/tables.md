@@ -14,17 +14,17 @@
 
 ## Table 2b
 
-| Scenario | Succeeded % | Rate-limited % | Timed out or given up % | Error % | Retries per request | Peak queue length | Tokens per answer | Cost per 1,000 answers (list-price equiv.) | Degraded answers % |
+| Scenario | Succeeded % | Rate-limited % (provider 429 / rejected locally) | Timed out or given up % | Error % | Retries per request | Peak queue length | Tokens per answer | Cost per 1,000 answers (list-price equiv.) | Degraded answers % |
 |---|---|---|---|---|---|---|---|---|---|
-| Steady, real Groq (daily token budget ran out mid-run) | 25.0 | 75.0 | 0.0 | 0.0 | 0.00 | 1 | 1895 | $0.342 | 0.0 |
-| Steady | 100.0 | 0.0 | 0.0 | 0.0 | 0.00 | 1 | 2251 | $0.422 | 0.0 |
-| Sudden burst | 13.3 | 86.7 | 0.0 | 0.0 | 0.00 | 2 | 2056 | $0.389 | 25.0 |
-| Sustained overload | 36.7 | 63.3 | 0.0 | 0.0 | 0.00 | 2 | 1425 | $0.299 | 86.4 |
-| Per-minute limit halved | 58.3 | 41.7 | 0.0 | 0.0 | 0.00 | 1 | 1394 | $0.306 | 85.7 |
-| Daily budget exhausted | 30.0 | 70.0 | 0.0 | 0.0 | 0.00 | 1 | 2410 | $0.445 | 0.0 |
-| Retry: none (90/min) | 91.7 | 0.0 | 8.3 | 0.0 | 0.00 | 1 | 2356 | $0.419 | 0.0 |
-| Retry: immediate (90/min) | 100.0 | 0.0 | 0.0 | 0.0 | 0.09 | 1 | 2340 | $0.413 | 0.0 |
-| Retry: backoff+jitter (90/min) | 100.0 | 0.0 | 0.0 | 0.0 | 0.07 | 1 | 2341 | $0.414 | 0.0 |
+| Steady, real Groq (daily token budget ran out mid-run) | 25.0 | 75.0 (8.3 / 66.7) | 0.0 | 0.0 | 0.00 | 1 | 1895 | $0.342 | 0.0 |
+| Steady | 100.0 | 0.0 (0.0 / 0.0) | 0.0 | 0.0 | 0.00 | 1 | 2251 | $0.422 | 0.0 |
+| Sudden burst | 13.3 | 86.7 (0.0 / 86.7) | 0.0 | 0.0 | 0.00 | 2 | 2056 | $0.389 | 25.0 |
+| Sustained overload | 36.7 | 63.3 (0.0 / 63.3) | 0.0 | 0.0 | 0.00 | 2 | 1425 | $0.299 | 86.4 |
+| Per-minute limit halved | 58.3 | 41.7 (0.0 / 41.7) | 0.0 | 0.0 | 0.00 | 1 | 1394 | $0.306 | 85.7 |
+| Daily budget exhausted | 30.0 | 70.0 (5.0 / 65.0) | 0.0 | 0.0 | 0.00 | 1 | 2410 | $0.445 | 0.0 |
+| Retry: none (90/min) | 91.7 | 0.0 (0.0 / 0.0) | 8.3 | 0.0 | 0.00 | 1 | 2356 | $0.419 | 0.0 |
+| Retry: immediate (90/min) | 100.0 | 0.0 (0.0 / 0.0) | 0.0 | 0.0 | 0.09 | 1 | 2340 | $0.413 | 0.0 |
+| Retry: backoff+jitter (90/min) | 100.0 | 0.0 (0.0 / 0.0) | 0.0 | 0.0 | 0.07 | 1 | 2341 | $0.414 | 0.0 |
 
 ## Table 3
 
@@ -33,7 +33,7 @@
 | A: 300tok/k3/rerank=no | 18 | 50.0 | 11.1 | 16.7 | 22.2 | 9/15 | 1495 | 695 / 3780 | 806 / 3780 |
 | B: 600tok/k4/rerank=no | 18 | 61.1 | 16.7 | 16.7 | 5.6 | 11/15 | 2340 | 842 / 1953 | 884 / 2049 |
 | C: 600tok/k4/rerank=yes | 18 | 72.2 | 11.1 | 16.7 | 0.0 | 13/15 | 2402 | 786 / 1439 | 839 / 1579 |
-| D: 900tok/k5/rerank=yes | 16 | 81.2 | 12.5 | 6.2 | 0.0 | 13/15 | 3746 | 697 / 925 | 798 / 1019 |
+| D: 900tok/k5/rerank=yes | 18 | 72.2 | 11.1 | 16.7 | 0.0 | 13/15 | 3682 | 697 / 905 | 798 / 1011 |
 
 ## Retry sweep (stand-in)
 

@@ -11,10 +11,25 @@ Exactly one grade per answered request, using the brief's four labels.
 
 Notes
 - "Correct and cited %" in Table 3 = share graded `correct` (the definition already requires a supporting citation).
-- Requests that never produced an answer for operational reasons (rate-limited, timed out) are not graded;
-  in the benchmark every request completed.
+- Requests that never produced an answer for operational reasons (rate-limited, timed out) are not graded. In the
+  benchmark, an attempt refused for the daily budget is logged under scenario `retrieval_<setting>_budget_wait`
+  (excluded from Table 3) and the same question is asked again once the budget refills (D/X3, D/U2, D/U3).
 - Stand-in load rows are not graded: their text is synthesised from retrieved passages, so grading would
   measure the stand-in, not the system.
 - Grader: the mechanical key-fact check in `grading_sheet.md` is only a reading aid. Grades are assigned by reading
   each answer against the reference answer and the cited passages, and every grade has a one-line reason in
   `grades.json`.
+
+## Procedure actually followed
+1. Guidelines above written before any answers were graded.
+2. Draft grades: the assistant read each released answer against the question's reference answer and the cited
+   passages (papers/processed/*.json, i.e. the exact PDF text), and wrote a one-line reason per grade.
+3. Mechanical audit (2026-11-14) over all 72 graded answers: grade consistent with decision (answered vs refused)
+   and with answerability; every `correct` cites a gold page; every citation carries the pinned arXiv version.
+   One flag (D/H1, gold list incomplete) - left for the student's decision.
+4. Final: the student reviews every grade, decides the borderline ones, and changes `_meta.status` to FINAL.
+   Until then the grades - and every quality number derived from them - are drafts.
+
+Known limit of the validator vs. the grades: the validator proves a citation *label* points to a retrieved passage
+and that numbers appear in it; it does not prove the passage supports the sentence's meaning. Misattributions
+(A/M2, B/M2) and unsupported elaborations (A/X1, B/X1, D/X1) passed the validator and were caught only by grading.

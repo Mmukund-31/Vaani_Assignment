@@ -1,8 +1,9 @@
 {
  "_meta": {
-  "status": "DRAFT - assistant-proposed grades pending the student's review",
+  "status": "DRAFT - proposed by the assistant, pending the student's review and sign-off",
   "guidelines": "evaluation/grading_guidelines.md",
-  "verified_against": "PDF text via papers/processed/*.json"
+  "procedure": "each answer read against its reference answer and the cited passages in papers/processed/*.json; audit 2026-11-14 re-checked all 70 grades for grade/decision consistency, answerable/unanswerable consistency, gold-page citation and arXiv version (1 flag: D/H1)",
+  "borderline_count": 10
  },
  "groq-retrievalA-20261113T232408-A1": {
   "grade": "correct",
@@ -260,7 +261,8 @@
  },
  "groq-retrievalD-20261114T073933-H1": {
   "grade": "correct",
-  "reason": "scaled cosine similarity between adjacent elements -> boundary probability (p.17 wording); 0.5 threshold not stated but only 'desirable'"
+  "reason": "scaled cosine similarity between adjacent elements -> boundary probability (p.17 wording); 0.5 threshold not stated but only 'desirable' | AUDIT: cited pages (2-4, 17-18) are not on the H1 gold-page list (6-7), which the guidelines require. p.17 does state the routing module is 'based on scaled cosine similarity', so the claim is supported; the gold list was incomplete. Kept 'correct' pending the student's decision.",
+  "borderline": true
  },
  "groq-retrievalD-20261114T073933-H2": {
   "grade": "correct",
@@ -292,5 +294,13 @@
  "groq-retrievalD-20261114T073933-U1": {
   "grade": "refused_correctly",
   "reason": "not in library; refused (Attention BLEU passages retrieved, not attributed to Moshi)"
+ },
+ "groq-retrievalD-20261114T073933-U2-retry2": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused without attributing Moshi/Mimi audio-quality scores to H-Net"
+ },
+ "groq-retrievalD-20261114T073933-U3-retry12": {
+  "grade": "refused_correctly",
+  "reason": "not in library; refused without computing a memory figure from the 213M parameter count"
  }
 }

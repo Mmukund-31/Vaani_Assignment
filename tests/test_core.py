@@ -285,3 +285,35 @@ def test_tpd_learned_from_429_body():
     g.mark_daily_exhausted(e.limit_kind, e.limit_value, e.limit_used)
     assert g.tpd == 15000 and g.daily_exhausted(1300) == "daily_tokens"
     assert 0 < g.daily_capacity_back_in(1300) / 60 < 24 * 60
+
+
+async def test_shed_requests_are_told_why_without_a_first_token():
+    g = Governor(rpm=None, tpm=2600, rpd=None, tpd=None)
+    relay = Relay(_pipe(MockProvider(delay=0.05), governor=g),
+                  SchedulerConfig(max_concurrency=1, max_queue=50, deadline_s=10), governor=g)
+    recs = await asyncio.gather(*[relay.handle("What is the Mimi frame rate?") for _ in range(12)])
+    shed = [r for r in recs if r.status == "rate_limited"]
+    assert shed and all("ask again" in r.answer and r.first_token_ms is None for r in shed)
+
+
+async def test_first_token_timeout_uses_time_left_after_limiter_wait():
+    t0 = asyncio.get_running_loop().time()
+    g = Governor(rpm=None, tpm=60000, rpd=None, tpd=None)   # refills 1,000 tokens/s
+    g.tpm_b.level = -1500                   # forces a ~3 s limiter wait before the call
+    seen = {}
+
+    class Spy(MockProvider):
+        async def stream(self, messages, max_tokens, on_text=None, first_token_timeout=30.0, total_timeout=60.0):
+            seen["ft"] = first_token_timeout
+            return await super().stream(messages, max_tokens, on_text, first_token_timeout, total_timeout)
+    p = Pipeline(Spy(), build_index(SETTINGS["A"]), governor=g, per_call_first_token_timeout=30.0)
+    p.retrieve_and_plan = lambda rec: build_index(SETTINGS["A"]).search("Mimi frame rate")
+    rec = Pipeline.intake("What is the Mimi frame rate?", 6.0)
+    await p.run(rec)
+    waited = asyncio.get_running_loop().time() - t0
+    assert seen and seen["ft"] <= 6.0 - min(waited, 6.0) + 0.5
+
+
+def test_busy_notice_handles_unbounded_wait():
+    from relay.pipeline import busy_notice
+    assert "ask again later" in busy_notice(float("inf")) and "12 s" in busy_notice(12.2)

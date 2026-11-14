@@ -18,7 +18,7 @@
 | R14 | Keep raw results for real + stand-in | results/results.csv, results/raw/ | done - results/runs, results/traces, results/raw |
 | R15 | Table 1 limits | report | done |
 | R16 | Table 2a/2b latency + outcomes | report, generated from results.csv | done (generated) |
-| R17 | Table 3 >= 3 retrieval settings | settings A-D | done - A, B, C (18 questions each), D (16 questions) |
+| R17 | Table 3 >= 3 retrieval settings | settings A-D | done - A, B, C, D: 18 questions each, real Groq |
 | R18 | >= 15 own questions, quality + tokens per answer | evaluation/questions.json (18) | done - 18 questions; grades are DRAFT pending student review |
 | R19 | Slow request breakdown waiting/working/retrying, before/after first token | stage_traces.jsonl | done - report section 4 |
 | R20 | Per-minute vs per-day policy | relay/limits.py, relay/scheduler.py | done - report section 5 |

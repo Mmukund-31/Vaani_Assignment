@@ -67,12 +67,14 @@ def trace(rec: RequestRecord, run_id: str, extra: dict | None = None) -> dict:
 
 
 class RunWriter:
-    def __init__(self, run_id: str):
+    def __init__(self, run_id: str, resume: bool = False):
         self.run_id = run_id
         self.csv_path = ROOT / "results" / "runs" / f"{run_id}.csv"
         self.trace_path = ROOT / "results" / "traces" / f"{run_id}.jsonl"
         self.csv_path.parent.mkdir(parents=True, exist_ok=True)
         self.trace_path.parent.mkdir(parents=True, exist_ok=True)
+        if resume and self.csv_path.exists():
+            return  # append to an interrupted run
         if self.csv_path.exists():
             raise FileExistsError(f"{self.csv_path} exists; run ids must be unique")
         with self.csv_path.open("w", newline="", encoding="utf-8") as f:

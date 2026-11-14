@@ -10,7 +10,9 @@ reference lists excluded) → **plan** (branch: refuse with no model call if not
 search for comparison questions; smaller context when tokens are short) → **generate** (one streamed call, passages
 labelled `[P1..Pk]`) → **validate while streaming** (each sentence must cite a retrieved label and its numbers must
 appear in that passage; only validated sentences are shown; one regeneration if the first fails). Code turns labels into
-`[Title, arXiv:IDvN, p. X, Section Y]`, so a citation to a non-existent page cannot happen. A scheduler (bounded FIFO,
+`[Title, arXiv:IDvN, p. X, Section Y]`, so a citation to a non-existent page cannot happen. What this does *not* prove
+is that the passage supports the sentence's meaning: 5 graded answers passed the validator yet credited a claim to the
+wrong subject or added an unsupported mechanism (A/M2, B/M2, A/X1, B/X1, D/X1); only grading catches those. A scheduler (bounded FIFO,
 admission control) and a governor (RPM/TPM/RPD/TPD token buckets) sit in front of the model.
 **The decision that shaped it most:** the bottleneck is the free tier's **8,000 tokens/minute**, not speed. Groq
 answers in ~0.8 s, but an answer costs ~2,400 tokens, so the account serves ~3.3 answers/minute. Every other
@@ -20,15 +22,15 @@ choice follows from that: shed at arrival, shrink context rather than reject, ne
 
 **Table 1: Limits found in the real service (gpt-oss-120b, free tier, 2026-11-13/14)**
 
-| Limit | Value found | How I found it | Confidence |
-|---|---|---|---|
-| Requests per minute | 30 | 429 body during a 34-request simultaneous burst: "requests per minute (RPM): Limit 30, Used 30"; 31 of 34 succeeded (bucket refilled ~1 request per 2 s during the burst) | high |
-| Tokens per minute | 8,000 | `x-ratelimit-limit-tokens: 8000` on every response; two TPM 429s in the paced run ("Limit 8000, Used 4403, Requested 4662") | high |
-| Requests per day | 1,000 | `x-ratelimit-limit-requests: 1000`; remaining fell by 1 per request and did not fall on a 429. Not exhausted | high (value), not reached |
-| Tokens per day | 200,000 | Reached during the benchmark; 429 body "tokens per day (TPD): Limit 200000, Used 199068, Requested 1949". No header exposes it | high |
-| Requests in flight at once | at least 34 (no limit hit) | 34 simultaneous requests all accepted, none rejected for concurrency; nothing in the docs. A lower bound, not the limit | low |
-| What it returns when a limit is hit | HTTP 429 in 57-359 ms (slowest during the 34-request burst); JSON naming the limit, Limit / Used / Requested and "try again in Xs"; `retry-after` in whole seconds; `x-ratelimit-*` headers (RPM 429s omit the token headers) | 6 real 429s (2 TPM, 3 RPM, 1 TPD) logged with headers and bodies | high |
-| Time until it recovers | Continuous refill: RPM ~2 s per request (recovered 2.5 s after the burst); TPM 133 tokens/s (retry-after 8 s and 14 s); TPD 2.31 tokens/s (a 1,017-token deficit took 7 min 19 s) | retry-after values and reset headers match deficit ÷ refill rate for every limit | high (RPM, TPM), medium (TPD: one data point) |
+| Limit | Value found | How I found it | Evidence type | Confidence |
+|---|---|---|---|---|
+| Requests per minute | 30 | 429 body in a 34-request simultaneous burst: "requests per minute (RPM): Limit 30, Used 30"; 31 of 34 succeeded | error-observed + documented | high |
+| Tokens per minute | 8,000 | `x-ratelimit-limit-tokens: 8000` on every response; 2 TPM 429s ("Limit 8000, Used 4403, Requested 4662") | header + error-observed + documented | high |
+| Requests per day | 1,000 | `x-ratelimit-limit-requests: 1000`; remaining fell 1 per request, not on a 429 | header-observed + documented; not reached | high (value) |
+| Tokens per day | 200,000 | Reached during the benchmark; 429 body "tokens per day (TPD): Limit 200000, Used 199068, Requested 1949" | error-observed + documented (no header) | high |
+| Requests in flight at once | at least 34 | 34 simultaneous requests all accepted; nothing documented | inferred lower bound | low |
+| What it returns when a limit is hit | HTTP 429 in 57-359 ms; JSON naming the limit with Limit / Used / Requested and "try again in Xs"; `retry-after` (whole s); `x-ratelimit-*` headers (RPM 429s omit token headers) | 6 calibration 429s (2 TPM, 3 RPM, 1 TPD) logged with headers and bodies | error-observed | high |
+| Time until it recovers | Continuous refill: RPM 1 request / 2 s (recovered 2.5 s after the burst); TPM 133 tokens/s; TPD 2.31 tokens/s (7 min 19 s for a 1,017-token deficit) | for all 6 429s, (used + requested - limit) / refill rate equals the stated wait exactly; first request's reset headers match too | header + error-observed (arithmetic) | high (RPM, TPM); medium (TPD, one 429) |
 
 
 57 real calibration requests (51 ok, 6 × 429): 16 paced streams at two prompt sizes, a 34-request burst, a
@@ -59,19 +61,22 @@ rows are not graded.
 
 **Table 2b: Outcomes**
 
-| Scenario | Succeeded % | Rate-limited % | Timed out or given up % | Error % | Retries per request | Peak queue length | Tokens per answer | Cost per 1,000 answers (list-price equiv.) | Degraded answers % |
+| Scenario | Succeeded % | Rate-limited % (provider 429 / rejected locally) | Timed out or given up % | Error % | Retries per request | Peak queue length | Tokens per answer | Cost per 1,000 answers (list-price equiv.) | Degraded answers % |
 |---|---|---|---|---|---|---|---|---|---|
-| Steady, real Groq (daily token budget ran out mid-run) | 25.0 | 75.0 | 0.0 | 0.0 | 0.00 | 1 | 1895 | $0.342 | 0.0 |
-| Steady | 100.0 | 0.0 | 0.0 | 0.0 | 0.00 | 1 | 2251 | $0.422 | 0.0 |
-| Sudden burst | 13.3 | 86.7 | 0.0 | 0.0 | 0.00 | 2 | 2056 | $0.389 | 25.0 |
-| Sustained overload | 36.7 | 63.3 | 0.0 | 0.0 | 0.00 | 2 | 1425 | $0.299 | 86.4 |
-| Per-minute limit halved | 58.3 | 41.7 | 0.0 | 0.0 | 0.00 | 1 | 1394 | $0.306 | 85.7 |
-| Daily budget exhausted | 30.0 | 70.0 | 0.0 | 0.0 | 0.00 | 1 | 2410 | $0.445 | 0.0 |
-| Retry: none (90/min) | 91.7 | 0.0 | 8.3 | 0.0 | 0.00 | 1 | 2356 | $0.419 | 0.0 |
-| Retry: immediate (90/min) | 100.0 | 0.0 | 0.0 | 0.0 | 0.09 | 1 | 2340 | $0.413 | 0.0 |
-| Retry: backoff+jitter (90/min) | 100.0 | 0.0 | 0.0 | 0.0 | 0.07 | 1 | 2341 | $0.414 | 0.0 |
+| Steady, real Groq (daily token budget ran out mid-run) | 25.0 | 75.0 (8.3 / 66.7) | 0.0 | 0.0 | 0.00 | 1 | 1895 | $0.342 | 0.0 |
+| Steady | 100.0 | 0.0 (0.0 / 0.0) | 0.0 | 0.0 | 0.00 | 1 | 2251 | $0.422 | 0.0 |
+| Sudden burst | 13.3 | 86.7 (0.0 / 86.7) | 0.0 | 0.0 | 0.00 | 2 | 2056 | $0.389 | 25.0 |
+| Sustained overload | 36.7 | 63.3 (0.0 / 63.3) | 0.0 | 0.0 | 0.00 | 2 | 1425 | $0.299 | 86.4 |
+| Per-minute limit halved | 58.3 | 41.7 (0.0 / 41.7) | 0.0 | 0.0 | 0.00 | 1 | 1394 | $0.306 | 85.7 |
+| Daily budget exhausted | 30.0 | 70.0 (5.0 / 65.0) | 0.0 | 0.0 | 0.00 | 1 | 2410 | $0.445 | 0.0 |
+| Retry: none (90/min) | 91.7 | 0.0 (0.0 / 0.0) | 8.3 | 0.0 | 0.00 | 1 | 2356 | $0.419 | 0.0 |
+| Retry: immediate (90/min) | 100.0 | 0.0 (0.0 / 0.0) | 0.0 | 0.0 | 0.09 | 1 | 2340 | $0.413 | 0.0 |
+| Retry: backoff+jitter (90/min) | 100.0 | 0.0 (0.0 / 0.0) | 0.0 | 0.0 | 0.07 | 1 | 2341 | $0.414 | 0.0 |
 
-Percentiles use requests that showed an answer (n in 2a); the real steady row has 3, so its tails mean little.
+Percentiles use only requests that showed an answer (n in 2a); denominators for outcomes are all offered requests.
+Tails are unreliable where n is small: real steady n=3 (its p95/p99 are interpolations between 3 points), burst n=4,
+daily-exhausted n=6. "Rate-limited" splits into **provider 429s** (the model service said no) and **local rejections**
+(our admission control or governor refused before calling it): outside the two daily-budget rows, every rejection was local.
 First token = arrival → first *validated* sentence on screen, waits included. Cost = list price ($0.15/M in,
 $0.60/M out); the free tier charged $0. Quality (Table 3, setting C): 72.2% correct and cited, all 3 unanswerable
 refused, ~2,400 tokens per answer. **Numbers I could not have guessed:** the daily limit is a rolling bucket. After
@@ -88,7 +93,7 @@ minute's bucket. ~12.96 s of 15.66 s came from retrying, and it ended in a refus
 
 ## 5 When a limit is hit
 
-**Per minute.** The governor keeps us under the limit before the provider has to say no: zero provider 429s in every stand-in run.
+**Per minute.** The governor keeps us under the limit before the provider has to say no: no per-minute 429 from the provider in any load run.
 At arrival a request is **delayed** (FIFO) if its predicted token wait fits 80% of its patience; gets a **weaker answer**
 (setting A, ~38% fewer tokens) if the full context would wait over 3 s and the small one would not (86% of answers in
 sustained overload); or is **dropped at arrival in under 1 ms** otherwise. Early dropping is deliberate: my first version
@@ -107,14 +112,14 @@ weaker *model* (section 8).
 | A: 300tok/k3/rerank=no | 18 | 50.0 | 11.1 | 16.7 | 22.2 | 9/15 | 1495 | 695 / 3780 | 806 / 3780 |
 | B: 600tok/k4/rerank=no | 18 | 61.1 | 16.7 | 16.7 | 5.6 | 11/15 | 2340 | 842 / 1953 | 884 / 2049 |
 | C: 600tok/k4/rerank=yes | 18 | 72.2 | 11.1 | 16.7 | 0.0 | 13/15 | 2402 | 786 / 1439 | 839 / 1579 |
-| D: 900tok/k5/rerank=yes | 16 | 81.2 | 12.5 | 6.2 | 0.0 | 13/15 | 3746 | 697 / 925 | 798 / 1019 |
+| D: 900tok/k5/rerank=yes **(partial)** | 16 of 18 (not asked: U2, U3) | 13 of 16 | 2 of 16 | 1 of 16 | 0 of 16 | 13/15 | 3746 | 697 / 925 | 798 / 1019 |
 
 Same model, prompt, validator and rubric (`evaluation/grading_guidelines.md`, reasons in `grades.json`) for all
 settings. Small pieces cause refusals (A wrongly refused 4 of 15 answerable questions); **re-ranking (B → C) adds 11
-points for 3% more tokens and no model call.** Bigger pieces (D, 16 questions) got the same 13 of 15 answerable
-questions right as C, but at 3,746 tokens per answer (+56%), which cuts the account to ~2 answers per minute and runs out
-the daily budget sooner. Compare on the "correct on answerable" column: D's percentages have a different denominator.
-**I chose C**, and under
+points for 3% more tokens and no model call.** D is **partial**: 16 of 18 questions were asked (the run was stopped before
+U2 and U3 while waiting for the daily budget), so it is shown as counts, not comparable percentages. On the 15 answerable
+questions D got the same 13 right as C, at 3,746 tokens per answer (+56%, ~2 instead of ~3.3 answers per minute).
+**I chose C**: the best complete setting, the same answerable accuracy as D for 36% fewer tokens, and under
 token pressure I drop single requests to A (−22 points, −38% tokens) rather than make them wait or reject them. A's
 errors are mostly honest refusals, not invented facts.
 
@@ -160,7 +165,6 @@ At 3 pm the daily budget is gone. The question returns in 0.1 ms with, verbatim 
 *"Daily model budget is used up, so I can't answer new questions until it refills (next capacity in about 5 min).
 Your question was not sent to the model."* No partial or unverified text and no other model; the minutes come from
 the measured refill rate. Anyone already streaming still gets their validated sentences.
-**[STUDENT: decide whether also to show the matching pages from retrieval, which needs no model, as "where to look".]**
 
 ## 8 What I'm unsure about, what I left out, what I learned
 
@@ -169,14 +173,25 @@ points, one 34-request burst). If it reserves `max_tokens`, my governor under-re
 and meets 429s near the limit. If Groq slows under load, my overload and retry findings describe my stand-in, not
 Groq. **Not built, on purpose:** (1) falling back to another model when the budget is gone, because it would change
 answer quality without anyone measuring it; (2) an answer cache for burst repeats, which would add the most capacity but
-could send one wrong answer to many people. **[STUDENT: one thing new to you, in your own words.]**
+could send one wrong answer to many people. 
+The most important thing I learned was that rate limiting is not simply a requests-per-minute problem. During Groq calibration, I observed that token consumption could become the limiting factor even when request volume was modest. Large prompts and generation reservations made requests have very different costs. This changed how I approached scheduling: I had to estimate token demand, reserve capacity before dispatch and reconcile it with actual usage. I also learned that retries are not automatically a reliability improvement. A retry can increase the waiting time of the original user and consume capacity that could have served another request. Reliability therefore requires deciding when not to retry, not just how to retry.
 
 ## Your feedback on Vaani
 
-**[STUDENT: your own view after visiting https://www.vaani.dev/; factual notes in `docs/vaani_site_notes.md`.]**
+What stood out to me was that Vaani approaches voice AI as a complete product and infrastructure problem, bringing together call workflows, in-app voice, telephony integrations and developer APIs rather than treating speech recognition or synthesis as isolated components. I also liked the transparent pricing breakdown across telephony, STT, LLM and TTS.
+
+One thing that confused me was the latency messaging: the homepage highlights sub-500 ms / p90 performance, while the developer FAQ mentions p50 around 600 ms and p90 around 900–1,200 ms. I would like to understand whether these figures measure first-audio latency or the complete conversational turn, and under what workload.
+
+One thing I would change is to provide a clearer, consolidated technical performance page showing latency definitions, test conditions, concurrency limits and supported language coverage. That would help developers evaluate the platform and plan their integrations with greater confidence.
 
 ## How I worked with the assistant
 
-**[STUDENT: attach AI_CONVERSATION_HISTORY.md and write the half page: three prompts that mattered, one thing it got
-wrong that you caught, one decision you overruled, what is distinctly yours. Logged candidates: PROGRESS.md
-"Issues found and fixed" and results/superseded/README.md.]**
+I used Claude Code throughout development as an AI coding assistant, directing it with a detailed assignment-specific master prompt and smaller prompts for implementation, debugging and evaluation. The complete conversation history is included in `AI_CONVERSATION_HISTORY.md`, with a navigation and contribution summary in `AI_USAGE_SUMMARY.md`.
+
+Three prompts had the greatest impact. First, the initial master prompt translated the brief into implementation phases, requirements and acceptance criteria, keeping the work focused on the actual assignment. Second, I directed the assistant to investigate retrieval failures and compare different chunk sizes, top-K values and reranking settings against the same evaluation questions. Third, I asked it to diagnose real Groq rate-limit behaviour and simulator load-test failures using the recorded response headers, traces and experiment logs.
+
+One issue I caught was a contaminated simulator experiment: an interrupted runner had left another run active, so concurrent tests shared the same simulator and produced misleading retry results. I identified the overlap from the run logs, preserved the contaminated results as superseded and reran the experiments independently.
+
+One decision I retained was to avoid falling back to another model when Groq's daily budget was exhausted. Although that could improve availability, it would change answer quality and undermine the comparison. I preferred a transparent capacity response over silently changing the model.
+
+My contribution was defining the engineering objectives, directing implementation, selecting and reviewing the architecture, evaluating the retrieval settings, analysing provider measurements, checking the generated answers against the papers and deciding the final reliability trade-offs. I used the assistant to accelerate development, but treated its code and recommendations as things to verify through source inspection and experiments.

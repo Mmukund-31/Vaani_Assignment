@@ -25,6 +25,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 CSV = ROOT / "results" / "results.csv"
 PRICE_IN, PRICE_OUT = 0.15 / 1e6, 0.60 / 1e6
+ALL_QUESTIONS = {q["id"] for q in __import__("json").loads((ROOT / "evaluation" / "questions.json").read_text(encoding="utf-8"))}
 ANSWERABLE = {q["id"] for q in __import__("json").loads((ROOT / "evaluation" / "questions.json").read_text(encoding="utf-8"))
               if q["answerable"]}
 
@@ -80,7 +81,7 @@ def table2(all_rows):
     a = ["| Scenario | Real or stand-in | Requests sent | Duration (s) | Offered rate (per min) | "
          "First token p50 / p95 / p99 (ms) | Total time p50 / p95 / p99 (ms) | Latency samples (n) |",
          "|---|---|---|---|---|---|---|---|"]
-    b = ["| Scenario | Succeeded % | Rate-limited % | Timed out or given up % | Error % | Retries per request | "
+    b = ["| Scenario | Succeeded % | Rate-limited % (provider 429 / rejected locally) | Timed out or given up % | Error % | Retries per request | "
          "Peak queue length | Tokens per answer | Cost per 1,000 answers (list-price equiv.) | Degraded answers % |",
          "|---|---|---|---|---|---|---|---|---|---|"]
     for label, scen, src in LOAD_ROWS:
@@ -97,14 +98,17 @@ def table2(all_rows):
         ft, tt, k = latency_cells(rows, [50, 95, 99])
         a.append(f"| {label} | {src} | {n} | {end - start:.0f} | {rate:.1f} | {ft} | {tt} | {k} |")
         st = {s: 100 * sum(r["status"] == s for r in rows) / n for s in ("ok", "rate_limited", "timeout", "error")}
+        # provider 429 = the model service said no; everything else rate_limited is our own admission control/governor
+        p429 = 100 * sum(r["status"] == "rate_limited" and r["error_type"].startswith("provider_429") for r in rows) / n
+        rl = f"{st['rate_limited']:.1f} ({p429:.1f} / {st['rate_limited'] - p429:.1f})"
         retries = np.mean([int(r["retries"]) for r in rows])
         peak = max(int(r["queue_depth"] or 0) for r in rows)
         tpa, cost = tokens_per_answer(rows)
         ok_rows = [r for r in rows if r["status"] == "ok" and r["model_calls"] not in ("", "0")]
         deg = 100 * sum(r["degraded"] == "1" for r in ok_rows) / len(ok_rows) if ok_rows else 0.0
-        b.append(f"| {label} | {st['ok']:.1f} | {st['rate_limited']:.1f} | {st['timeout']:.1f} | {st['error']:.1f} | "
+        b.append(f"| {label} | {st['ok']:.1f} | {rl} | {st['timeout']:.1f} | {st['error']:.1f} | "
                  f"{retries:.2f} | {peak} | {tpa:.0f} | ${cost:.3f} | {deg:.1f} |" if tpa is not None else
-                 f"| {label} | {st['ok']:.1f} | {st['rate_limited']:.1f} | {st['timeout']:.1f} | {st['error']:.1f} | "
+                 f"| {label} | {st['ok']:.1f} | {rl} | {st['timeout']:.1f} | {st['error']:.1f} | "
                  f"{retries:.2f} | {peak} | not measured | not measured | not measured |")
     return "\n".join(a), "\n".join(b)
 
@@ -127,6 +131,17 @@ def table3(all_rows):
         answerable = [r for r in rows if r["question_id"] in ANSWERABLE]
         ans_n, ans_ok = len(answerable), sum(r["answer_grade"] == "correct" for r in answerable)
         label = rows[0]["retrieval_setting"].split(":", 1)[-1]
+        n_questions = len(ALL_QUESTIONS)
+        if n < n_questions:
+            # partial setting: report counts, never percentages that look comparable to complete settings
+            asked = {r["question_id"].split("-")[0] for r in rows}
+            missing = ", ".join(sorted(ALL_QUESTIONS - asked))
+            c = {k: sum(r["answer_grade"] == k for r in rows) for k in ("correct", "wrong", "refused_correctly",
+                                                                        "refused_wrongly")}
+            out.append(f"| {scen[-1]}: {label} **(partial)** | {n} of {n_questions} (not asked: {missing}) | "
+                       f"{c['correct']} of {n} | {c['wrong']} of {n} | {c['refused_correctly']} of {n} | "
+                       f"{c['refused_wrongly']} of {n} | {ans_ok}/{ans_n} | {tpa:.0f} | {ft} | {tt} |")
+            continue
         note = f" ({ungraded} ungraded)" if ungraded else ""
         out.append(f"| {scen[-1]}: {label} | {n}{note} | {g['correct']:.1f} | {g['wrong']:.1f} | "
                    f"{g['refused_correctly']:.1f} | {g['refused_wrongly']:.1f} | {ans_ok}/{ans_n} | {tpa:.0f} | {ft} | {tt} |")

@@ -11,15 +11,15 @@ ROOT = Path(__file__).resolve().parent.parent
 
 TABLE_1 = """**Table 1: Limits found in the real service (gpt-oss-120b, free tier, 2026-11-13/14)**
 
-| Limit | Value found | How I found it | Confidence |
-|---|---|---|---|
-| Requests per minute | 30 | 429 body during a 34-request simultaneous burst: "requests per minute (RPM): Limit 30, Used 30"; 31 of 34 succeeded (bucket refilled ~1 request per 2 s during the burst) | high |
-| Tokens per minute | 8,000 | `x-ratelimit-limit-tokens: 8000` on every response; two TPM 429s in the paced run ("Limit 8000, Used 4403, Requested 4662") | high |
-| Requests per day | 1,000 | `x-ratelimit-limit-requests: 1000`; remaining fell by 1 per request and did not fall on a 429. Not exhausted | high (value), not reached |
-| Tokens per day | 200,000 | Reached during the benchmark; 429 body "tokens per day (TPD): Limit 200000, Used 199068, Requested 1949". No header exposes it | high |
-| Requests in flight at once | at least 34 (no limit hit) | 34 simultaneous requests all accepted, none rejected for concurrency; nothing in the docs. A lower bound, not the limit | low |
-| What it returns when a limit is hit | HTTP 429 in 57-359 ms (slowest during the 34-request burst); JSON naming the limit, Limit / Used / Requested and "try again in Xs"; `retry-after` in whole seconds; `x-ratelimit-*` headers (RPM 429s omit the token headers) | 6 real 429s (2 TPM, 3 RPM, 1 TPD) logged with headers and bodies | high |
-| Time until it recovers | Continuous refill: RPM ~2 s per request (recovered 2.5 s after the burst); TPM 133 tokens/s (retry-after 8 s and 14 s); TPD 2.31 tokens/s (a 1,017-token deficit took 7 min 19 s) | retry-after values and reset headers match deficit ÷ refill rate for every limit | high (RPM, TPM), medium (TPD: one data point) |
+| Limit | Value found | How I found it | Evidence type | Confidence |
+|---|---|---|---|---|
+| Requests per minute | 30 | 429 body in a 34-request simultaneous burst: "requests per minute (RPM): Limit 30, Used 30"; 31 of 34 succeeded | error-observed + documented | high |
+| Tokens per minute | 8,000 | `x-ratelimit-limit-tokens: 8000` on every response; 2 TPM 429s ("Limit 8000, Used 4403, Requested 4662") | header + error-observed + documented | high |
+| Requests per day | 1,000 | `x-ratelimit-limit-requests: 1000`; remaining fell 1 per request, not on a 429 | header-observed + documented; not reached | high (value) |
+| Tokens per day | 200,000 | Reached during the benchmark; 429 body "tokens per day (TPD): Limit 200000, Used 199068, Requested 1949" | error-observed + documented (no header) | high |
+| Requests in flight at once | at least 34 | 34 simultaneous requests all accepted; nothing documented | inferred lower bound | low |
+| What it returns when a limit is hit | HTTP 429 in 57-359 ms; JSON naming the limit with Limit / Used / Requested and "try again in Xs"; `retry-after` (whole s); `x-ratelimit-*` headers (RPM 429s omit token headers) | 6 calibration 429s (2 TPM, 3 RPM, 1 TPD) logged with headers and bodies | error-observed | high |
+| Time until it recovers | Continuous refill: RPM 1 request / 2 s (recovered 2.5 s after the burst); TPM 133 tokens/s; TPD 2.31 tokens/s (7 min 19 s for a 1,017-token deficit) | for all 6 429s, (used + requested - limit) / refill rate equals the stated wait exactly; first request's reset headers match too | header + error-observed (arithmetic) | high (RPM, TPM); medium (TPD, one 429) |
 """
 
 

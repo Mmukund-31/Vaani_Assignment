@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import csv
 import json
 import re
 import time
@@ -28,15 +29,22 @@ ROOT = Path(__file__).resolve().parent.parent
 DAILY = ("provider_429_daily", "daily_tokens", "daily_requests")
 
 
-async def run_setting(mode: str, key: str, questions: list[dict], run_id: str, wait_daily: bool = False) -> None:
+async def run_setting(mode: str, key: str, questions: list[dict], run_id: str, wait_daily: bool = False,
+                      resume: bool = False) -> None:
     """With wait_daily, a question refused for the DAILY budget is logged (scenario retrieval_<key>_budget_wait,
     so it never counts in Table 3), we sleep until the rolling daily bucket has refilled enough (computed from the
     429 body the governor parsed), and the same question is asked again. Groq does not charge for 429s."""
     pipe, gov = make_pipeline(mode, key)
-    w = RunWriter(run_id)
+    w = RunWriter(run_id, resume=resume)
     label = SETTINGS[key].label()
+    done_ids: set[str] = set()
+    if resume and w.csv_path.exists():   # continue attempt numbering so request ids stay unique
+        with w.csv_path.open(encoding="utf-8") as f:
+            done_ids = {r["request_id"] for r in csv.DictReader(f)}
     for q in questions:
         attempt = 0
+        while f"{run_id}-{q['id']}" + (f"-retry{attempt}" if attempt else "") in done_ids:
+            attempt += 1
         while True:
             est = 0
             if gov:
@@ -80,9 +88,11 @@ async def run_setting(mode: str, key: str, questions: list[dict], run_id: str, w
 
 async def main_async(a):
     qs = json.loads((ROOT / "evaluation" / "questions.json").read_text(encoding="utf-8"))
-    stamp = time.strftime("%Y%m%dT%H%M%S")
+    if a.questions:
+        qs = [q for q in qs if q["id"] in set(a.questions)]
+    stamp = a.resume or time.strftime("%Y%m%dT%H%M%S")
     for key in a.settings:
-        await run_setting(a.mode, key, qs, f"{a.mode}-retrieval{key}-{stamp}", a.wait_daily)
+        await run_setting(a.mode, key, qs, f"{a.mode}-retrieval{key}-{stamp}", a.wait_daily, bool(a.resume))
 
 
 def main():
@@ -91,6 +101,9 @@ def main():
     ap.add_argument("--settings", nargs="+", default=["A", "C"])
     ap.add_argument("--wait-daily", action="store_true",
                     help="sleep through daily-budget exhaustion instead of stopping (rolling 24 h bucket)")
+    ap.add_argument("--questions", nargs="+", help="only these question ids (e.g. U2 U3)")
+    ap.add_argument("--resume", metavar="STAMP",
+                    help="append to the interrupted run with this timestamp instead of starting a new run")
     asyncio.run(main_async(ap.parse_args()))
 
 
